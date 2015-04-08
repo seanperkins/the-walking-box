@@ -2,6 +2,8 @@
 
 A game with no exposition but lots of zombies.
 
+https://thewalkingbox.herokuapp.com/
+
 ## Requirements
 
 ### Node.js, Bower and Grunt
