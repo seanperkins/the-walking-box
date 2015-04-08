@@ -1,20 +1,11 @@
 var properties = require('./src/js/game/properties.js');
+var pkg = require('./package.json');
 
 module.exports = function (grunt) {
 
-  grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-cache-bust');
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-compress');
-  grunt.loadNpmTasks('grunt-contrib-connect');
-  grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-jade');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-sass');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-open');
-  grunt.loadNpmTasks('grunt-pngmin');
+  Object.keys(pkg.devDependencies).forEach(function(t) {
+    if(t.indexOf('grunt-') === 0) { grunt.loadNpmTasks(t); }
+  });
 
   var productionBuild = false;
 
