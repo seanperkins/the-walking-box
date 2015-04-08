@@ -6,20 +6,18 @@ https://thewalkingbox.herokuapp.com/
 
 ## Requirements
 
-### Node.js, Bower and Grunt
+### Node.js
 
-You will need to first install [Node.js](http://nodejs.org/download/) and the grunt-cli: `npm install -g grunt-cli`.
+You will need to first install [Node.js](http://nodejs.org/download/).
 
 ### Getting Started
 
 
     npm install
 
-    bower install
-
 And you should now be ready to spin up a development build of your new project:
 
-    grunt
+    npm run dev
 
 ## Developing
 
@@ -30,6 +28,8 @@ All of the files required to run the game will live in the `src` folder, this wi
 Files in the `build` directory will always be generated and excluded from Git by the `.gitignore`, as such these will removed without warning and should generally not be edited.
 
 ### Available Targets
+
+Install the grunt-cli to use these (`npm install -g grunt-cli`).
 
 #### `grunt`
 

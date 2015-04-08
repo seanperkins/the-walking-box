@@ -1,6 +1,0 @@
-{
-  "name": "the-walking-box",
-  "dependencies": {
-    "phaser": "~2.3.0"
-  }
-}

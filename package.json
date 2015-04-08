@@ -4,7 +4,8 @@
   "description": "A Grunty Phaser.js SDK",
   "main": "build/js/app.min.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "grunt"
   },
   "repository": {
     "type": "git",
@@ -14,12 +15,11 @@
   "license": "MIT",
   "browser": {
     "lodash": "./node_modules/lodash/dist/lodash.compat.js",
-    "Phaser": "./bower_components/phaser/build/phaser.min.js",
     "Stats": "./src/js/lib/stats.min.js"
   },
   "browserify-shim": {
     "Phaser": {
-      "exports": "Phaser"
+      "exports": "global:Phaser"
     },
     "lodash": {
       "exports": "_"
@@ -28,7 +28,8 @@
       "exports": "Stats"
     }
   },
-  "dependencies":{
+  "dependencies": {
+    "phaser": "^2.3.0"
   },
   "devDependencies": {
     "browserify": "^4.1.5",
