@@ -5,7 +5,8 @@
   "main": "build/js/app.min.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "grunt"
+    "dev": "grunt",
+    "shrinkwrap": "npm-shrinkwrap"
   },
   "repository": {
     "type": "git",
@@ -49,6 +50,7 @@
     "grunt-open": "^0.2.3",
     "grunt-pngmin": "^0.6.1",
     "grunt-sass": "^0.18.1",
+    "npm-shrinkwrap": "^5.3.0",
     "serve-static": "^1.9.2"
   },
   "engines": {
