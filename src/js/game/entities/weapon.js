@@ -4,7 +4,7 @@ var Utilities = require('../utils/utilities')(),
 module.exports = function() {
 
   var CLIP_SIZE = 6;
-  var RELOAD_SPEED = 50; //speed to reload each bullet in game frames
+  var RELOAD_SPEED = 200; //speed to reload each bullet in game frames
 
   var timers = {
     shot: 0,
@@ -13,20 +13,20 @@ module.exports = function() {
 
   var hudBullets = [];
 
+  var reloadNotifier;
+
   var initializeHud = function (game) {
+    reloadNotifier = game.add.text(5, 5, 'RELOADING!!!', {
+      fontSize: '14px',
+      fill: '#Ff3333'
+    });
+    reloadNotifier.fixedToCamera = true;
+    reloadNotifier.visible = false;
+
     for (var k = 0; k < CLIP_SIZE; k++) {
       var sprite = game.add.sprite(12*k+5, 5, 'hud-bullet');
       sprite.fixedToCamera = true;
       hudBullets.push(sprite);
-    }
-  };
-
-  var checkReload = function () {
-    if (logic.ammo < CLIP_SIZE) {
-      setAmmo(logic.ammo + 1);
-      if (logic.ammo < CLIP_SIZE) {
-        timers.reload = RELOAD_SPEED;
-      }
     }
   };
 
@@ -74,6 +74,8 @@ module.exports = function() {
 
   logic.reload = function () {
     if (timers.reload === 0) {
+      reloadNotifier.visible = true;
+      setAmmo(0);
       timers.reload = RELOAD_SPEED;
     }
   };
@@ -83,7 +85,8 @@ module.exports = function() {
       timers.reload--;
 
       if (timers.reload === 0) {
-        checkReload();
+        reloadNotifier.visible = false;
+        setAmmo(CLIP_SIZE);
       }
     } 
   };
