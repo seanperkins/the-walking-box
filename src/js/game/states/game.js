@@ -188,7 +188,9 @@ module.exports = function(game) {
     playerLogic.movePlayer(game, player);
     playerLogic.rotatePlayer(game, player);
 
-    if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) || game.input.mousePointer.justPressed()) {
+    if ( player.body.health > 1 && (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) ||
+        game.input.mousePointer.justPressed())) {
+        // player can only shoot if he isn't DED
         weapon.shoot(game, player, bullets);
     }
 
