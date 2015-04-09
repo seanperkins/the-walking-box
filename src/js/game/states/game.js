@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     zombieLogic = require('../entities/zombie')(),
-    playerLogic = require('../entities/player')(),
+    Player = require('../entities/player')(),
     buildingLogic = require('../entities/building')(),
     weapon = require('../entities/weapon')(),
     lighting = require('../utils/lighting')();
@@ -12,8 +12,7 @@ module.exports = function(game) {
       player,
       zombies,
       bullets,
-      buildings,
-      MAX_PLAYER_HEALTH = 10;
+      buildings;
 
 
   function resetEntity(entity) {
@@ -89,13 +88,7 @@ module.exports = function(game) {
       }
     });
 
-    //Create player in center area
-    player = game.add.sprite(game.world.centerX, game.world.centerY, 'hero');
-    player.anchor.setTo(0.5,0.5);
-
-    game.physics.arcade.enable(player);
-    player.body.collideWorldBounds = true;
-    _.extend(player.body, {health: MAX_PLAYER_HEALTH});
+    player = Player.create(game);
 
     //Create bullets
     bullets = game.add.group();
@@ -133,8 +126,8 @@ module.exports = function(game) {
 
     game.physics.arcade.overlap(player, zombies, debouncedHurtplayer, null, this);
 
-    playerLogic.movePlayer(game, player);
-    playerLogic.rotatePlayer(game, player);
+    Player.movePlayer(game, player);
+    Player.rotatePlayer(game, player);
 
     if ( player.body.health > 1 && (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) ||
         game.input.mousePointer.justPressed())) {

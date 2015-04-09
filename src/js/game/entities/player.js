@@ -1,10 +1,25 @@
-var Utilities = require('../utils/utilities')();
+var _ = require('lodash'),
+        Utilities = require('../utils/utilities')();
 
 module.exports = function() {
 
-  var logic = {};
+  var Player = {};
 
-  logic.movePlayer = function(game, player) {
+  Player.MAX_PLAYER_HEALTH = 10;
+
+  Player.create = function(game) {
+    //Create player in center area
+    var player = game.add.sprite(game.world.centerX, game.world.centerY, 'hero');
+    player.anchor.setTo(0.5,0.5);
+
+    game.physics.arcade.enable(player);
+    player.body.collideWorldBounds = true;
+    _.extend(player.body, {health: Player.MAX_PLAYER_HEALTH});
+
+    return player;
+  }
+
+  Player.movePlayer = function(game, player) {
     var IS_W_DOWN = game.input.keyboard.isDown(Phaser.Keyboard.W),
         IS_A_DOWN = game.input.keyboard.isDown(Phaser.Keyboard.A),
         IS_S_DOWN = game.input.keyboard.isDown(Phaser.Keyboard.S),
@@ -42,11 +57,11 @@ module.exports = function() {
     }
   };
 
-  logic.rotatePlayer = function(game, player) {
+  Player.rotatePlayer = function(game, player) {
     var angleInRadians = Utilities.calculateRotation(game, player);
 
     player.rotation = angleInRadians;
   };
 
-  return logic;
+  return Player;
 };
