@@ -2,15 +2,24 @@ var Utilities = require('../utils/utilities')();
 
 module.exports = function() {
 
-  var Weapon = {
+  var CLIP_SIZE = 3;
+  var RELOAD_SPEED = 60; //speed to reload each bullet in game frames
 
+  var logic = {
     shotTimer: 0,
+    ammo: CLIP_SIZE,
+    reloadTimer: 0
+  };
 
-    shoot: function (game, player, bullets) {
-      var baseSpeed = 1000;
+  logic.shoot = function (game, player, bullets) {
+    var baseSpeed = 1000;
 
-      if (Weapon.shotTimer < game.time.now) {
-        Weapon.shotTimer = game.time.now + 275;
+    if (logic.shotTimer < game.time.now) {
+      logic.shotTimer = game.time.now + 275;
+      if (logic.ammo === 0) {
+        logic.reload();
+      } else {
+        logic.setAmmo(logic.ammo - 1);
         var bullet,
             rotation = Utilities.calculateRotation(game, player),
             yModifier = Math.sin(rotation),
@@ -30,6 +39,31 @@ module.exports = function() {
     }
   };
 
-  return Weapon;
+  logic.setAmmo = function (count) {
+    logic.ammo = count;
+    console.log('ammo: '+count);
+  };
+
+  logic.reload = function () {
+    if (logic.reloadTimer === 0) {
+      logic.reloadTimer = RELOAD_SPEED;
+      console.log('reloading');
+    }
+  };
+
+  logic.updateReloadTimer = function () {
+    if (logic.reloadTimer > 0) {
+      logic.reloadTimer--;
+
+      if (logic.reloadTimer === 0 && logic.ammo < CLIP_SIZE) {
+        logic.setAmmo(logic.ammo + 1);
+        if (logic.ammo < CLIP_SIZE) {
+          logic.reloadTimer = RELOAD_SPEED;
+        }
+      }
+    } 
+  };
+
+  return logic;
 
 };
