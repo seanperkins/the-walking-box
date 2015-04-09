@@ -42,7 +42,7 @@ module.exports = function(game) {
     }
     else {
       player.body.health = player.body.health - 1;
-      var scalePercentage = 1 - ((MAX_PLAYER_HEALTH-player.body.health)*0.05);
+      var scalePercentage = 1 - ((Player.MAX_PLAYER_HEALTH-player.body.health)*0.05);
       player.scale.setTo(scalePercentage, scalePercentage);
     }
   }
