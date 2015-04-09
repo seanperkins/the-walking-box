@@ -197,7 +197,7 @@ module.exports = function(game) {
         weapon.shoot(game, player, bullets);
     }
 
-    weapon.updateReloadTimer();
+    weapon.checkReload(game);
 
     _.each(buildings.children, function(building) {
       buildingLogic.spawnZombiesFromBuilding(game, zombies, player, building);
