@@ -1,3 +1,5 @@
+var _ = require('lodash');
+
 var Boid = function(game, x, y, group, options) {
   Phaser.Sprite.call(this, game, x, y, 'zombie');
   this.anchor.setTo(0.5, 0.5);
@@ -8,15 +10,17 @@ var Boid = function(game, x, y, group, options) {
   this.cannibal = this.options.cannibal;
   this.roamer = this.options.roamer;
   
-  this.maxVelocity = 100.0;
+  this.body.collideWorldBounds = true;
+
+  this.maxVelocity = _.random(150, 210, true);
   this.maxForce = 10.0;
-  this.seekForce = 0.5;
-  
+  this.seekForce = 14;
+
   this.radius = Math.sqrt(this.height * this.height + this.width * this.width) / 2;
 
   this.desiredSeparation = 40.0;
   this.maxDistance = this.radius * 10.0;
-  
+
 };
 
 Boid.prototype = Object.create(Phaser.Sprite.prototype);
@@ -62,7 +66,7 @@ Boid.prototype.seekGroup = function(targetGroup) {
     }
   }, this);
   if(closest) {
-    return this.seek(closest.body.position);  
+    return this.seek(closest.body.position);
   }
   return new Phaser.Point();
 };
@@ -125,7 +129,7 @@ Boid.prototype.separate = function() {
 
 
 Boid.prototype.cohesion = function() {
-  
+
   var sum = new Phaser.Point();
   var steer = new Phaser.Point();
   var count = 0;
@@ -139,7 +143,7 @@ Boid.prototype.cohesion = function() {
   }, this);
 
   if (count > 0) {
-    sum.divide(count, count);  
+    sum.divide(count, count);
     return this.seek(sum);
   }
   return steer;
@@ -159,7 +163,7 @@ Boid.prototype.align = function() {
   }, this);
 
   if (count > 0) {
-    sum.divide(count, count);  
+    sum.divide(count, count);
 
     sum.normalize();
     sum.multiply(this.maxVelocity, this.maxVelocity);
