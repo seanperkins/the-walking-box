@@ -1,13 +1,24 @@
-var Utilities = require('../utils/utilities')();
+var Utilities = require('../utils/utilities')(),
+    _ = require('lodash');
 
 module.exports = function() {
 
-  var CLIP_SIZE = 3;
-  var RELOAD_SPEED = 60; //speed to reload each bullet in game frames
+  var CLIP_SIZE = 6;
+  var RELOAD_SPEED = 50; //speed to reload each bullet in game frames
 
   var timers = {
     shot: 0,
     reload: 0
+  };
+
+  var hudBullets = [];
+
+  var initializeHud = function (game) {
+    for (var k = 0; k < CLIP_SIZE; k++) {
+      var sprite = game.add.sprite(12*k+5, 5, 'hud-bullet');
+      sprite.fixedToCamera = true;
+      hudBullets.push(sprite);
+    }
   };
 
   var checkReload = function () {
@@ -21,11 +32,16 @@ module.exports = function() {
 
   var setAmmo = function (count) {
     logic.ammo = count;
-    console.log('ammo: '+count);
+    _.each(hudBullets, function(bullet, n) {
+      bullet.visible = n < count;
+    });
   };
 
-  var logic = {
-    ammo: CLIP_SIZE
+  var logic = {};
+
+  logic.init = function (game) {
+    initializeHud(game);
+    setAmmo(CLIP_SIZE);
   };
 
   logic.shoot = function (game, player, bullets) {
@@ -59,7 +75,6 @@ module.exports = function() {
   logic.reload = function () {
     if (timers.reload === 0) {
       timers.reload = RELOAD_SPEED;
-      console.log('reloading');
     }
   };
 
