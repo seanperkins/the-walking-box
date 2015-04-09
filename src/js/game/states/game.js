@@ -165,6 +165,9 @@ module.exports = function(game) {
     rayBitmap = game.add.bitmapData(game.world.width, game.world.height);
     rayBitmapImage = game.add.image(0, 0, rayBitmap);
     rayBitmapImage.visible = false;
+
+    //Lock n load
+    weapon.init(game);
   };
 
   gameState.update = function() {
