@@ -11,6 +11,8 @@ module.exports = function() {
     reload: 0
   };
 
+  var ammo = 0;
+
   var hudBullets = [];
 
   var reloadNotifier;
@@ -31,7 +33,7 @@ module.exports = function() {
   };
 
   var setAmmo = function (count) {
-    logic.ammo = count;
+    ammo = count;
     _.each(hudBullets, function(bullet, n) {
       bullet.visible = n < count;
     });
@@ -49,10 +51,10 @@ module.exports = function() {
 
     if (timers.shot < game.time.now) {
       timers.shot = game.time.now + 275;
-      if (logic.ammo === 0) {
+      if (ammo === 0) {
         logic.reload();
       } else {
-        setAmmo(logic.ammo - 1);
+        setAmmo(ammo - 1);
         var bullet,
             rotation = Utilities.calculateRotation(game, player),
             yModifier = Math.sin(rotation),
@@ -80,7 +82,13 @@ module.exports = function() {
     }
   };
 
-  logic.updateReloadTimer = function () {
+  logic.checkReload = function (game) {
+    if (ammo !== CLIP_SIZE &&
+        timers.reload === 0 &&
+        game.input.keyboard.isDown(Phaser.Keyboard.R)) {
+      logic.reload();
+    }
+
     if (timers.reload > 0) {
       timers.reload--;
 
