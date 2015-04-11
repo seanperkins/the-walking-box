@@ -93,7 +93,7 @@ module.exports = function(game) {
     game.camera.follow(player);
 
     game.physics.arcade.collide(player, staticObjects);
-    game.physics.arcade.collide(player, zombies);
+    game.physics.arcade.collide(player, zombies, collisionDamageFn, null, this);
     game.physics.arcade.collide(player, buildings);
 
     game.physics.arcade.collide(zombies, staticObjects);
@@ -101,8 +101,6 @@ module.exports = function(game) {
     game.physics.arcade.collide(zombies, buildings);
 
     game.physics.arcade.overlap(bullets, zombies, killZombie, null, this);
-
-    game.physics.arcade.collide(player, zombies, collisionDamageFn, null, this);
 
     player.update();
 
