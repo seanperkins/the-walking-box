@@ -165,6 +165,9 @@ module.exports = function(game) {
     rayBitmap = game.add.bitmapData(game.world.width, game.world.height);
     rayBitmapImage = game.add.image(0, 0, rayBitmap);
     rayBitmapImage.visible = false;
+
+    //Lock n load
+    weapon.init(game);
   };
 
   gameState.update = function() {
@@ -193,6 +196,8 @@ module.exports = function(game) {
         // player can only shoot if he isn't DED
         weapon.shoot(game, player, bullets);
     }
+
+    weapon.checkReload(game);
 
     _.each(buildings.children, function(building) {
       buildingLogic.spawnZombiesFromBuilding(game, zombies, player, building);
