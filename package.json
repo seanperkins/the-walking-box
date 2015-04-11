@@ -30,8 +30,9 @@
     }
   },
   "dependencies": {
-    "phaser": "^2.3.0",
-    "lodash": "^2.4.1"
+    "lodash": "^2.4.1",
+    "compression": "^1.4.3",
+    "phaser": "^2.3.0"
   },
   "devDependencies": {
     "browserify": "^4.1.5",
