@@ -17,7 +17,7 @@ module.exports = function() {
 
   var reloadNotifier;
 
-  var initializeHud = function (game) {
+  var initializeHud = function (game, player) {
     reloadNotifier = game.add.text(5, 5, 'RELOADING!!!', {
       fontSize: '14px',
       fill: '#Ff3333'
@@ -26,9 +26,9 @@ module.exports = function() {
     reloadNotifier.visible = false;
 
     for (var k = 0; k < CLIP_SIZE; k++) {
-      var sprite = game.add.sprite(12*k+5, 5, 'hud-bullet');
-      sprite.fixedToCamera = true;
-      hudBullets.push(sprite);
+      var bullet = game.add.sprite(-45, -45+(k*12+5), 'hud-bullet');
+      hudBullets.push(bullet);
+      player.addChild(bullet);
     }
   };
 
@@ -41,8 +41,8 @@ module.exports = function() {
 
   var logic = {};
 
-  logic.init = function (game) {
-    initializeHud(game);
+  logic.init = function (game, player) {
+    initializeHud(game, player);
     setAmmo(CLIP_SIZE);
   };
 
