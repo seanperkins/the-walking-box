@@ -5,7 +5,7 @@ var Boid = function(game, x, y, group, options) {
   this.game.physics.arcade.enableBody(this);
 
   this.options = options || {};
-  this.cannibal = this.options.caniibal;
+  this.cannibal = this.options.cannibal;
 
   
   this.maxVelocity = 100.0;

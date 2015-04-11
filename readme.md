@@ -27,6 +27,13 @@ All of the files required to run the game will live in the `src` folder, this wi
 
 Files in the `build` directory will always be generated and excluded from Git by the `.gitignore`, as such these will removed without warning and should generally not be edited.
 
+### Debugging
+
+A [debug](https://www.npmjs.com/package/debug) module is exported to the window as `window.gameDebug`.
+
+To see all messages, write `gameDebug.enable('*')`. You can filter by module. All game messages are under the
+`'walkingBox:*'` namespace.
+
 ### Available Targets
 
 Install the grunt-cli to use these (`npm install -g grunt-cli`).

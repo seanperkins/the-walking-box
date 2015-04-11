@@ -14,3 +14,7 @@ _.each(states, function(state, key) {
 });
 
 game.state.start('boot');
+
+if (process.browser) {
+  window.gameDebug = require('debug');
+}
