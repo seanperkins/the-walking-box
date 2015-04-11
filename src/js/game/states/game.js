@@ -2,8 +2,7 @@ var _ = require('lodash'),
     zombieLogic = require('../entities/zombie')(),
     Player = require('../entities/player'),
     buildingLogic = require('../entities/building')(),
-    weapon = require('../entities/weapon')(),
-    lighting = require('../utils/lighting')();
+    weapon = require('../entities/weapon')();
 
 module.exports = function(game) {
 
@@ -12,7 +11,8 @@ module.exports = function(game) {
       player,
       zombies,
       bullets,
-      buildings;
+      buildings,
+      collisionDamageFn;
 
   function killZombie(bullet, zombie) {
     bullet.kill();
@@ -24,12 +24,6 @@ module.exports = function(game) {
     // we should destroy instead of .kill() because destroy will free up objects for GC and kill does not.
     // kill also retain all the listeners on the object.
   }
-
-  function takeDamage ()  {
-    player.takeDamage(game, player);
-  }
-  //This is a bit of a hack
-  throttleDamage = _.throttle(takeDamage, 200, { 'leading': true, 'trailing': false });
 
   gameState.create = function () {
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -72,6 +66,9 @@ module.exports = function(game) {
 
     player = new Player(game);
 
+    // Create throttled damage handler.
+    collisionDamageFn = _.throttle(player.takeDamage.bind(player), 200, { 'leading': true, 'trailing': false });
+
     //Create bullets
     bullets = game.add.group();
     game.physics.enable(bullets, Phaser.Physics.ARCADE);
@@ -103,7 +100,7 @@ module.exports = function(game) {
 
     game.physics.arcade.overlap(bullets, zombies, killZombie, null, this);
 
-    game.physics.arcade.collide(player, zombies, throttleDamage, null, this);
+    game.physics.arcade.collide(player, zombies, collisionDamageFn, null, this);
 
     player.update();
 
@@ -122,7 +119,7 @@ module.exports = function(game) {
     _.each(zombies.children, function(zombie) {
       zombie.update();
     });
-  
+
     // lighting.update(game, player, buildings);
   };
 

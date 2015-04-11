@@ -1,14 +1,14 @@
-var _ = require('lodash'),
-        Utilities = require('../utils/utilities')();
+var Utilities = require('../utils/utilities');
+var debug = require('debug')('walkingBox:player');
 
 var Player = function(game, options) {
   Phaser.Sprite.call(this, game, game.world.centerX, game.world.centerY, 'hero');
   this.anchor.setTo(0.5,0.5);
   this.game.physics.arcade.enableBody(this);
   this.body.collideWorldBounds = true;
-  
+
   this.options = options || {};
-  
+
   this.maxPlayerHealth = this.options.maxPlayerHealth || 5;
   this.body.health = this.maxPlayerHealth;
   this.baseSpeed = this.options.baseSpeed || 400;
@@ -68,19 +68,21 @@ Player.prototype.rotatePlayer = function() {
   this.rotation = angleInRadians;
 };
 
-Player.prototype.takeDamage = function(game, player) {
-  if(player.body.health  === 1) {
-    player.kill();
-    message = 'ZOMBIES GOT HUNGRY!';
+Player.prototype.takeDamage = function() {
+  debug('Took damage. Health: %d', this.body.health);
+  var game = this.game;
+  if (this.body.health === 1) {
+    this.kill();
+    var message = 'ZOMBIES GOT HUNGRY!';
     game.add.text(game.camera.position.x,
                   game.camera.position.y-230,
                   message,
                   { fontSize: '50px', fill: '#Ff3333' });
   }
   else {
-    player.body.health = player.body.health - 1;
-    var scalePercentage = 1 - ((this.maxPlayerHealth-player.body.health)*0.05);
-    player.scale.setTo(scalePercentage, scalePercentage);
+    this.body.health = this.body.health - 1;
+    var scalePercentage = 1 - ((this.maxPlayerHealth - this.body.health) * 0.05);
+    this.scale.setTo(scalePercentage, scalePercentage);
   }
 };
 
