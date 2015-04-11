@@ -2,7 +2,8 @@ var _ = require('lodash'),
     zombieLogic = require('../entities/zombie')(),
     Player = require('../entities/player'),
     buildingLogic = require('../entities/building')(),
-    weapon = require('../entities/weapon')();
+    weapon = require('../entities/weapon')(),
+    Lighting = require('../utils/lighting');
 
 module.exports = function(game) {
 
@@ -12,6 +13,7 @@ module.exports = function(game) {
       zombies,
       bullets,
       buildings,
+      lighting,
       collisionDamageFn;
 
   function killZombie(bullet, zombie) {
@@ -81,7 +83,7 @@ module.exports = function(game) {
     }
 
     //Add lighting objects
-    // lighting.create(game, player, buildings);
+    lighting = new Lighting(game);
 
     //Lock n load
     weapon.init(game, player);
@@ -120,7 +122,7 @@ module.exports = function(game) {
       zombie.update();
     });
 
-    // lighting.update(game, player, buildings);
+    lighting.update(game, player, buildings);
   };
 
   return gameState;

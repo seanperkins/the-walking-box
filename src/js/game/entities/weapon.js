@@ -1,4 +1,4 @@
-var Utilities = require('../utils/utilities')(),
+var Utilities = require('../utils/utilities'),
     _ = require('lodash');
 
 module.exports = function() {
