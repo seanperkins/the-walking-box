@@ -18,6 +18,11 @@ module.exports = function() {
     object.body.velocity.y = direction[facing][1]*speed;
   };
 
+  Utilities.resetEntity = function (entity) {
+    entity.body.velocity.x = 0;
+    entity.body.velocity.y = 0;
+  }
+
   Utilities.setBulletSpeed = function (object, angleInRadians, speed) {
     var yModifier = Math.sin(angleInRadians),
         xModifier = Math.cos(angleInRadians);
@@ -26,7 +31,7 @@ module.exports = function() {
     object.body.velocity.y = yModifier*speed;
   };
 
-  Utilities.calculateRotation = function(game, object) {
+  Utilities.calculateRotation = function (game, object) {
     var deltaX = game.input.mousePointer.worldX - object.position.x,
         deltaY = game.input.mousePointer.worldY - object.position.y;
 

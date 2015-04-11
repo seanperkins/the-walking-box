@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     zombieLogic = require('../entities/zombie')(),
-    Player = require('../entities/player')(),
+    Player = require('../entities/player'),
     buildingLogic = require('../entities/building')(),
     weapon = require('../entities/weapon')(),
     lighting = require('../utils/lighting')();
@@ -14,12 +14,6 @@ module.exports = function(game) {
       bullets,
       buildings;
 
-
-  function resetEntity(entity) {
-    entity.body.velocity.x = 0;
-    entity.body.velocity.y = 0;
-  }
-
   function killZombie(bullet, zombie) {
     bullet.kill();
     setTimeout(function() {
@@ -31,23 +25,11 @@ module.exports = function(game) {
     // kill also retain all the listeners on the object.
   }
 
-  function resetGameWithMessage(message) {
-    game.add.text(game.camera.position.x, game.camera.position.y-230, message, { fontSize: '50px', fill: '#Ff3333' });
+  function takeDamage ()  {
+    player.takeDamage(game, player);
   }
-
-  function hurtPlayer(player) {
-    if(player.body.health  === 1) {
-      player.kill();
-      resetGameWithMessage('ZOMBIES GOT HUNGRY!');
-    }
-    else {
-      player.body.health = player.body.health - 1;
-      var scalePercentage = 1 - ((Player.MAX_PLAYER_HEALTH-player.body.health)*0.05);
-      player.scale.setTo(scalePercentage, scalePercentage);
-    }
-  }
-
-  var debouncedHurtplayer = _.throttle(hurtPlayer, 400, { 'leading': true, 'trailing': false });
+  //This is a bit of a hack
+  throttleDamage = _.throttle(takeDamage, 200, { 'leading': true, 'trailing': false });
 
   gameState.create = function () {
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -88,7 +70,7 @@ module.exports = function(game) {
       }
     });
 
-    player = Player.create(game);
+    player = new Player(game);
 
     //Create bullets
     bullets = game.add.group();
@@ -102,16 +84,13 @@ module.exports = function(game) {
     }
 
     //Add lighting objects
-    lighting.create(game, player, buildings);
+    // lighting.create(game, player, buildings);
 
     //Lock n load
     weapon.init(game, player);
   };
 
   gameState.update = function() {
-    //  Reset the players velocity (movement)
-    resetEntity(player);
-
     game.camera.follow(player);
 
     game.physics.arcade.collide(player, staticObjects);
@@ -124,10 +103,9 @@ module.exports = function(game) {
 
     game.physics.arcade.overlap(bullets, zombies, killZombie, null, this);
 
-    game.physics.arcade.overlap(player, zombies, debouncedHurtplayer, null, this);
+    game.physics.arcade.collide(player, zombies, throttleDamage, null, this);
 
-    Player.movePlayer(game, player);
-    Player.rotatePlayer(game, player);
+    player.update();
 
     if ( player.body.health > 1 && (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) ||
         game.input.mousePointer.justPressed())) {
@@ -145,7 +123,7 @@ module.exports = function(game) {
       zombie.update();
     });
   
-    lighting.update(game, player, buildings);
+    // lighting.update(game, player, buildings);
   };
 
   return gameState;
