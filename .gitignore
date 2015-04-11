@@ -33,6 +33,7 @@ Icon?
 
 # Build files
 /bower_components/*
+/build
 
 .sass-cache
 

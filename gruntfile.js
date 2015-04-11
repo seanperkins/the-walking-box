@@ -146,8 +146,8 @@ module.exports = function (grunt) {
         }
       , compile:
         { files:
-            [ { src: 'src/images/*.png'
-              , dest: 'src/images/'
+            [ { src: 'build/images/*.png'
+              , dest: 'build/images/'
               }
             ]
           }
@@ -209,21 +209,18 @@ module.exports = function (grunt) {
   );
 
   grunt.registerTask('build',
-  [ 'jshint'
-    , 'clean'
+  [ 'clean'
     , 'browserify'
     , 'jade'
     , 'sass'
     , 'uglify'
     , 'copy'
     , 'cacheBust'
-    , 'connect'
-    , 'open'
-    , 'watch'
+    , 'optimise'
     ]
   );
 
-  grunt.registerTask('optimise', ['pngmin', 'copy:images']);
+  grunt.registerTask('optimise', ['copy:images', 'pngmin']);
   grunt.registerTask('cocoon', ['compress:cocoon']);
   grunt.registerTask('zip', ['compress:zip']);
 };
