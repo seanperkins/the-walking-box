@@ -86,4 +86,9 @@ Player.prototype.takeDamage = function() {
   }
 };
 
+Player.prototype.addHealth = function() {
+  this.body.health = this.maxPlayerHealth;
+  this.scale.setTo(1, 1);
+};
+
 module.exports = Player;

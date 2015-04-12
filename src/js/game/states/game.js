@@ -16,7 +16,16 @@ module.exports = function(game) {
       buildings,
       lighting,
       collisionDamageFn,
+      healthPacks,
       counts;
+
+  function populateHealthPack(x, y) {
+    var healthPack = healthPacks.create(x, y, 'health-pack');
+    game.physics.enable(healthPack, Phaser.Physics.ARCADE);
+    healthPack.anchor.setTo(0.5, 0.5);
+    healthPack.body.immovable = true;
+    game.add.tween(healthPack.scale).to( { x: 1.3, y: 1.3 }, 500, Phaser.Easing.Quadratic.InOut, true, 0, 100, true);
+  }
 
   function killZombie(bullet, zombie) {
     zombieLogic.bleed(game, zombie);
@@ -25,9 +34,19 @@ module.exports = function(game) {
       // fixing a racing condition where the bullet is still being updated even though the reference is null
       bullet.destroy();
     });
+
+    if( player.body.health !== player.maxHealth && _.random(0, 100, true) < 10) {
+      populateHealthPack(zombie.position.x, zombie.position.y);
+    }
+
     zombie.destroy();
     // we should destroy instead of .kill() because destroy will free up objects for GC and kill does not.
     // kill also retain all the listeners on the object.
+  }
+
+  function resetPlayerHealth(player, health) {
+    health.destroy();
+    player.addHealth();
   }
 
   gameState.create = function () {
@@ -36,6 +55,7 @@ module.exports = function(game) {
     staticObjects = game.add.group();
     buildings = game.add.group();
     zombies = game.add.group();
+    healthPacks = game.add.group();
 
     //Create an array of coordinates that make a 3000px x 3000 grid
     var placementMatrix = [];
@@ -106,6 +126,7 @@ module.exports = function(game) {
     game.physics.arcade.collide(zombies, buildings);
 
     game.physics.arcade.overlap(bullets, zombies, killZombie, null, this);
+    game.physics.arcade.overlap(player, healthPacks, resetPlayerHealth, null, this);
 
     player.update();
 
