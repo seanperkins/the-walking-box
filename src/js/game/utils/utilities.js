@@ -35,3 +35,23 @@ Utilities.calculateRotation = function (game, object) {
 
   return Math.atan2(deltaY, deltaX);
 };
+
+Utilities.createCounts = function (game) {
+  var counts = game.add.text(game.camera.width-400, 0, 'Stats', {
+    fontSize: '14px',
+    fill: '#Ff3333'
+  });
+  counts.fixedToCamera = true;
+  counts.visible = true;
+
+  return counts;
+};
+
+Utilities.updateCounts = function (counts, zombies, buildings, staticObjects) {
+  var countsText = '';
+  countsText += 'Zombies: ' + zombies.length;
+  countsText += ' | Buildings: ' + buildings.length;
+  countsText += ' | Static Objects ' + staticObjects.length;
+  counts.text = countsText;
+  counts.update();
+};
