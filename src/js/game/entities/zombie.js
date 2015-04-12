@@ -12,7 +12,17 @@ module.exports = function() {
                                     group
                                       ));
     zombie.target = target;
-  };  
+  };
+
+  logic.bleed = function(game, zombie){
+    //create an emitter
+    var blood = game.add.emitter(zombie.x, zombie.y, 100);
+    blood.makeParticles('blood');
+    blood.gravity = 0;
+    
+    blood.start(true, 1000, null, 100);
+    blood.update();
+  };
 
   return logic;
 };

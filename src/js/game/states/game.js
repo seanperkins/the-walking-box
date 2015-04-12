@@ -17,6 +17,7 @@ module.exports = function(game) {
       collisionDamageFn;
 
   function killZombie(bullet, zombie) {
+    zombieLogic.bleed(game, zombie);
     bullet.kill();
     setTimeout(function() {
       // fixing a racing condition where the bullet is still being updated even though the reference is null
