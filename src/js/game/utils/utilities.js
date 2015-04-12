@@ -37,7 +37,7 @@ Utilities.calculateRotation = function (game, object) {
 };
 
 Utilities.createCounts = function (game) {
-  var counts = game.add.text(game.camera.width-400, 0, 'Stats', {
+  var counts = game.add.text(game.camera.width-600, 0, 'Stats', {
     fontSize: '14px',
     fill: '#Ff3333'
   });
@@ -48,8 +48,11 @@ Utilities.createCounts = function (game) {
 };
 
 Utilities.updateCounts = function (counts, zombies, buildings, staticObjects) {
-  var countsText = '';
-  countsText += 'Zombies: ' + zombies.length;
+  var countsText = '',
+      zombieCounts = {roamer: 0, lazy: 0};
+  zombies.forEach(function(zombie){if(zombie.roamer){zombieCounts.roamer +=1;}else{zombieCounts.lazy +=1;}});
+  countsText += 'Roamer Zombies: ' + zombieCounts.roamer;
+  countsText += ' | Lazy Zombies: ' + zombieCounts.lazy;
   countsText += ' | Buildings: ' + buildings.length;
   countsText += ' | Static Objects ' + staticObjects.length;
   counts.text = countsText;
