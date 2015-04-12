@@ -82,7 +82,7 @@ module.exports = function(game) {
     this.maxZombies = 30;
 
     for(var k = 0; k < this.maxZombies; k++) {
-      zombieLogic.spawnZombie(game, player, zombies, game.world.randomX, game.world.randomY);
+      zombieLogic.spawnZombie(game, player, zombies, game.world.randomX, game.world.randomY, {roamer: true});
     }
 
     //Add lighting objects

@@ -6,7 +6,7 @@ var Boid = function(game, x, y, group, options) {
 
   this.options = options || {};
   this.cannibal = this.options.cannibal;
-
+  this.roamer = this.options.roamer;
   
   this.maxVelocity = 100.0;
   this.maxForce = 10.0;
@@ -24,22 +24,25 @@ Boid.prototype.constructor = Boid;
 
 Boid.prototype.update = function() {
   this.body.acceleration.setTo(0,0);
-  if(this.target && this.target.exists) {
-    var seekAccel = Phaser.Point();
-    if(this.target instanceof Phaser.Group) {
-      seekAccel = this.seekGroup();
-    } else {
-      seekAccel = this.seek(this.target.body.position);
+  //Roamer zombies continue to persue the player even when not on screen
+  if (this.roamer || this.inCamera){
+    if(this.target && this.target.exists) {
+      var seekAccel = Phaser.Point();
+      if(this.target instanceof Phaser.Group) {
+        seekAccel = this.seekGroup();
+      } else {
+        seekAccel = this.seek(this.target.body.position);
+      }
+      seekAccel.multiply(this.seekForce, this.seekForce);
+      this.applyForce(seekAccel);
     }
-    seekAccel.multiply(this.seekForce, this.seekForce);
-    this.applyForce(seekAccel);
+    this.applyForce(this.separate());
+    this.applyForce(this.align());
+    this.cohesion();
+    
+    this.checkBorders();
+    this.rotation = Math.atan2(this.body.velocity.y, this.body.velocity.x);    
   }
-  this.applyForce(this.separate());
-  this.applyForce(this.align());
-  this.cohesion();
-  
-  this.checkBorders();
-  this.rotation = Math.atan2(this.body.velocity.y, this.body.velocity.x);
 };
 
 Boid.prototype.applyForce = function(force) {
