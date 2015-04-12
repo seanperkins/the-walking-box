@@ -13,6 +13,7 @@ module.exports = function(game) {
     game.load.image('hud-bullet', 'images/hud/bullet.png#grunt-cache-bust');
     game.load.image('blood', 'images/blood.png#grunt-cache-bust');
     game.load.image('health-pack', 'images/health-pack.png#grunt-cache-bust');
+    game.load.image('button', 'images/restart-button.png#grunt-cache-bust');
     };
 
   preloader.create = function () {

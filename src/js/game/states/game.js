@@ -17,6 +17,8 @@ module.exports = function(game) {
       lighting,
       collisionDamageFn,
       healthPacks,
+      resetButton,
+      resetText,
       counts;
 
   function populateHealthPack(x, y) {
@@ -47,6 +49,17 @@ module.exports = function(game) {
   function resetPlayerHealth(player, health) {
     health.destroy();
     player.addHealth();
+  }
+
+  function clickResetButton() {
+    resetButton.destroy();
+    resetText.destroy();
+
+    player.restoreHealthAndSize();
+    player.revive();
+
+    weapon.resetAmmo();
+    resetButton = undefined;
   }
 
   gameState.create = function () {
@@ -117,6 +130,7 @@ module.exports = function(game) {
   gameState.update = function() {
     game.camera.follow(player);
 
+
     game.physics.arcade.collide(player, staticObjects);
     game.physics.arcade.collide(player, zombies, collisionDamageFn, null, this);
     game.physics.arcade.collide(player, buildings);
@@ -149,6 +163,13 @@ module.exports = function(game) {
     lighting.update(game, player, buildings);
 
     Utilities.updateCounts(counts, zombies, buildings, staticObjects);
+
+    if(player.isDead() && !resetButton) {
+      var message = 'ZOMBIES GOT HUNGRY!';
+      resetButton = game.add.button(game.camera.position.x, game.camera.position.y-130, 'button', clickResetButton, null, 2, 1, 0);
+      player.kill();
+      resetText = game.add.text(game.camera.position.x, game.camera.position.y-230, message, { fontSize: '50px', fill: '#Ff3333' });
+    }
 
   };
 

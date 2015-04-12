@@ -68,18 +68,19 @@ Player.prototype.rotatePlayer = function() {
   this.rotation = angleInRadians;
 };
 
+Player.prototype.isDead = function() {
+  return this.body.health === 1;
+};
+
+Player.prototype.restoreHealthAndSize = function() {
+  this.body.health = this.maxPlayerHealth;
+  this.scale.setTo(1, 1);
+};
+
 Player.prototype.takeDamage = function() {
   debug('Took damage. Health: %d', this.body.health);
-  var game = this.game;
-  if (this.body.health === 1) {
-    this.kill();
-    var message = 'ZOMBIES GOT HUNGRY!';
-    game.add.text(game.camera.position.x,
-                  game.camera.position.y-230,
-                  message,
-                  { fontSize: '50px', fill: '#Ff3333' });
-  }
-  else {
+
+  if(this.body.health > 1) {
     this.body.health = this.body.health - 1;
     var scalePercentage = 1 - ((this.maxPlayerHealth - this.body.health) * 0.05);
     this.scale.setTo(scalePercentage, scalePercentage);

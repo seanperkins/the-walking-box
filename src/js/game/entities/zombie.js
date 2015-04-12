@@ -20,7 +20,7 @@ module.exports = function() {
     var blood = game.add.emitter(zombie.x, zombie.y, 100);
     blood.makeParticles('blood');
     blood.gravity = 0;
-    
+
     blood.start(true, 1000, null, 100);
     blood.update();
   };
