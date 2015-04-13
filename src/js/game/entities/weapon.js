@@ -74,6 +74,11 @@ module.exports = function() {
     }
   };
 
+  logic.resetAmmo = function() {
+    reloadNotifier.visible = false;
+    setAmmo(CLIP_SIZE);
+  };
+
   logic.reload = function () {
     if (timers.reload === 0) {
       reloadNotifier.visible = true;
@@ -96,7 +101,7 @@ module.exports = function() {
         reloadNotifier.visible = false;
         setAmmo(CLIP_SIZE);
       }
-    } 
+    }
   };
 
   return logic;
