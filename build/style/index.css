@@ -1,0 +1,13 @@
+body {
+  margin: 0;
+  background: gray; }
+
+#header h1 {
+  color: #c9c9c9;
+  background: #383838;
+  text-align: center;
+  margin: 0;
+  padding: 20px; }
+
+#game canvas {
+  margin: auto; }
