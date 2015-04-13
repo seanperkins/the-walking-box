@@ -46,6 +46,22 @@ module.exports = function(game) {
     // kill also retain all the listeners on the object.
   }
 
+  function bulletRicochet(bullet) {
+    bullet.kill();
+    var blood = game.add.emitter(bullet.x, bullet.y, 20);
+    blood.makeParticles('blood');
+    blood.gravity = 0;
+    blood.forEach(function(particle){
+      particle.tint = 0x444444;
+    });
+
+    blood.start(false, 200, 100, 20, 10);
+    blood.update();
+    setTimeout(function() {
+      bullet.destroy();
+    });
+  }
+
   function resetPlayerHealth(player, health) {
     health.destroy();
     player.addHealth();
@@ -140,6 +156,7 @@ module.exports = function(game) {
     game.physics.arcade.collide(zombies, buildings);
 
     game.physics.arcade.overlap(bullets, zombies, killZombie, null, this);
+    game.physics.arcade.overlap(bullets, buildings, bulletRicochet, null, this);
     game.physics.arcade.overlap(player, healthPacks, resetPlayerHealth, null, this);
 
     player.update();
