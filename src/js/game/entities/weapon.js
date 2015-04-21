@@ -1,8 +1,4 @@
-var Utilities = require('../utils/utilities');
 var _ = require('lodash');
-
-var CLIP_SIZE = 6;
-var RELOAD_SPEED = 200; //speed to reload each bullet in game frames
 
 var timers = {
   shot: 0,
@@ -30,60 +26,48 @@ var Weapon = function(game, player) {
   reloadNotifier.fixedToCamera = true;
   reloadNotifier.visible = false;
 
-  for (var k = 0; k < CLIP_SIZE; k++) {
+  for (var k = 0; k < this.CLIP_SIZE; k++) {
     var bullet = game.add.sprite(-45, -45+(k*12+5), 'hud-bullet');
     hudBullets.push(bullet);
     player.addChild(bullet);
   }
 
-  setAmmo(CLIP_SIZE);
+  this.ammo.set = setAmmo;
+
+  this.ammo.set(this.CLIP_SIZE);
 };
 
 Weapon.prototype.constructor = Weapon;
 
-Weapon.prototype.shoot = function(game, player, bullets) {
-  var baseSpeed = 1000;
+Weapon.prototype.ammo = {};
 
+Weapon.prototype.shoot = function(game, player, bullets) {
   if (timers.shot < game.time.now) {
-    timers.shot = game.time.now + 275;
+    timers.shot = game.time.now + this.FIRING_SPEED;
     if (ammo === 0) {
       this.reload();
     } else {
-      setAmmo(ammo - 1);
-      var bullet,
-          rotation = Utilities.calculateRotation(game, player),
-          yModifier = Math.sin(rotation),
-          xModifier = Math.cos(rotation);
-
-      bullet = bullets.create(
-                player.position.x+(xModifier*25),
-                player.position.y+(yModifier*25),
-                'bullet');
-
-      game.physics.enable(bullet, Phaser.Physics.ARCADE);
-      bullet.outOfBoundsKill = true;
-      bullet.anchor.setTo(0.5, 0.5);
-
-      Utilities.setBulletSpeed(bullet, rotation, baseSpeed);
+      this.ammo.set(ammo - 1);
+      this.ammo.fire(game, player, bullets);
     }
   }
 };
 
 Weapon.prototype.resetAmmo = function() {
   reloadNotifier.visible = false;
-  setAmmo(CLIP_SIZE);
+  this.ammo.set(this.CLIP_SIZE);
 };
 
 Weapon.prototype.reload = function() {
   if (timers.reload === 0) {
     reloadNotifier.visible = true;
-    setAmmo(0);
-    timers.reload = RELOAD_SPEED;
+    this.ammo.set(0);
+    timers.reload = this.RELOAD_SPEED;
   }
 };
 
 Weapon.prototype.checkReload = function(game) {
-  if (ammo !== CLIP_SIZE &&
+  if (ammo !== this.CLIP_SIZE &&
       timers.reload === 0 &&
       game.input.keyboard.isDown(Phaser.Keyboard.R)) {
     this.reload();
@@ -94,7 +78,7 @@ Weapon.prototype.checkReload = function(game) {
 
     if (timers.reload === 0) {
       reloadNotifier.visible = false;
-      setAmmo(CLIP_SIZE);
+      this.ammo.set(this.CLIP_SIZE);
     }
   }
 };
