@@ -1,4 +1,5 @@
 var _ = require('lodash');
+var Utilities = require('../utils/utilities');
 
 var timers = {
   shot: 0,
@@ -32,14 +33,32 @@ var Weapon = function(game, player) {
     player.addChild(bullet);
   }
 
-  this.ammo.set = setAmmo;
-
-  this.ammo.set(this.CLIP_SIZE);
+  setAmmo(this.CLIP_SIZE);
 };
 
 Weapon.prototype.constructor = Weapon;
 
-Weapon.prototype.ammo = {};
+Weapon.prototype.emitBullet = function(speed, rotation, game, player, bullets) {
+  var bullet,
+      yModifier = Math.sin(rotation),
+      xModifier = Math.cos(rotation);
+
+  bullet = bullets.create(
+            player.position.x+(xModifier*25),
+            player.position.y+(yModifier*25),
+            'bullet');
+
+  game.physics.enable(bullet, Phaser.Physics.ARCADE);
+  bullet.outOfBoundsKill = true;
+  bullet.anchor.setTo(0.5, 0.5);
+
+  Utilities.setBulletSpeed(bullet, rotation, speed);
+};
+
+Weapon.prototype.emitBullets = function(game, player, bullets) {
+  var rotation = Utilities.calculateRotation(game, player);
+  this.emitBullet(this.BULLET_SPEED, rotation, game, player, bullets);
+};
 
 Weapon.prototype.shoot = function(game, player, bullets) {
   if (timers.shot < game.time.now) {
@@ -47,21 +66,21 @@ Weapon.prototype.shoot = function(game, player, bullets) {
     if (ammo === 0) {
       this.reload();
     } else {
-      this.ammo.set(ammo - 1);
-      this.ammo.fire(game, player, bullets);
+      setAmmo(ammo - 1);
+      this.emitBullets(game, player, bullets);
     }
   }
 };
 
 Weapon.prototype.resetAmmo = function() {
   reloadNotifier.visible = false;
-  this.ammo.set(this.CLIP_SIZE);
+  setAmmo(this.CLIP_SIZE);
 };
 
 Weapon.prototype.reload = function() {
   if (timers.reload === 0) {
     reloadNotifier.visible = true;
-    this.ammo.set(0);
+    setAmmo(0);
     timers.reload = this.RELOAD_SPEED;
   }
 };
@@ -78,7 +97,7 @@ Weapon.prototype.checkReload = function(game) {
 
     if (timers.reload === 0) {
       reloadNotifier.visible = false;
-      this.ammo.set(this.CLIP_SIZE);
+      setAmmo(this.CLIP_SIZE);
     }
   }
 };

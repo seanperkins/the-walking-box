@@ -2,7 +2,7 @@ var _ = require('lodash'),
     zombieLogic = require('../entities/zombie')(),
     Player = require('../entities/player'),
     buildingLogic = require('../entities/building')(),
-    Revolver = require('../entities/weapons/revolver'),
+    Shotgun = require('../entities/weapons/shotgun'),
     Lighting = require('../utils/lighting'),
     Utilities = require('../utils/utilities');
 
@@ -139,7 +139,7 @@ module.exports = function(game) {
     lighting = new Lighting(game);
 
     //Lock n load
-    weapon = new Revolver(game, player);
+    weapon = new Shotgun(game, player);
 
     counts = Utilities.createCounts(game);
   };
