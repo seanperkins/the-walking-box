@@ -28,7 +28,7 @@ var Weapon = function(game, player) {
   reloadNotifier.visible = false;
 
   for (var k = 0; k < this.CLIP_SIZE; k++) {
-    var bullet = game.add.sprite(-45, -45+(k*12+5), 'hud-bullet');
+    var bullet = game.add.sprite(-45, -this.CLIP_SIZE*6+k*12, 'hud-bullet');
     hudBullets.push(bullet);
     player.addChild(bullet);
   }
