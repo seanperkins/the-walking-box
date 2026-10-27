@@ -37,7 +37,7 @@ module.exports = function(game) {
       bullet.destroy();
     });
 
-    if( player.body.health !== player.maxHealth && _.random(0, 100, true) < 10) {
+    if( player.body.health !== player.maxPlayerHealth && _.random(0, 100, true) < 10) {
       populateHealthPack(zombie.position.x, zombie.position.y);
     }
 

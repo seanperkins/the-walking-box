@@ -31,7 +31,7 @@ Boid.prototype.update = function() {
   //Roamer zombies continue to persue the player even when not on screen
   if (this.roamer || this.inCamera){
     if(this.target && this.target.exists) {
-      var seekAccel = Phaser.Point();
+      var seekAccel;
       if(this.target instanceof Phaser.Group) {
         seekAccel = this.seekGroup();
       } else {
