@@ -141,6 +141,7 @@ module.exports = function(game) {
     });
 
     lighting.update(player, walls);
+    lighting.hideUnseen(zombies);
 
     if (debugCounts) {
       debugCounts.update(zombies, buildings, staticObjects);
