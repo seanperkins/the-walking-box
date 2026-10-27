@@ -1,5 +1,11 @@
 # Change Log
 
+*October 27, 2026 — performance and fit*
++ Particle emitters destroy themselves after fading, and bullets are pooled with a 1.5s lifespan (they previously flew forever)
++ Lighting draws into one screen-sized canvas instead of two 3000×3000 ones
++ Game scales to fit the window, keeping its aspect ratio (#6)
++ Player bleeds when bitten (#25)
+
 *October 27, 2026 — gameplay loop*
 + Waves of roaming zombies every 25s, bigger and faster each time
 + Death screen shows survival time, kills, wave and best run (stored locally); Enter restarts the run

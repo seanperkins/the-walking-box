@@ -5,6 +5,7 @@ var _ = require('lodash'),
     Lighting = require('../utils/lighting'),
     Utilities = require('../utils/utilities'),
     Sound = require('../utils/sound'),
+    Effects = require('../utils/effects'),
     properties = require('../properties');
 
 var WAVE_INTERVAL = 25000,
@@ -93,12 +94,9 @@ module.exports = function(game) {
   function killZombie(bullet, zombie) {
     run.kills++;
     Sound.splat();
-    zombieLogic.bleed(game, zombie);
+    Effects.splatter(game, zombie.x, zombie.y, 100, 1000);
+    // Bullets are pooled by the weapon, so kill rather than destroy.
     bullet.kill();
-    setTimeout(function() {
-      // fixing a racing condition where the bullet is still being updated even though the reference is null
-      bullet.destroy();
-    });
 
     if( player.body.health !== player.maxPlayerHealth && _.random(0, 100, true) < 10) {
       populateHealthPack(zombie.position.x, zombie.position.y);
@@ -112,18 +110,7 @@ module.exports = function(game) {
   function bulletRicochet(bullet) {
     Sound.ricochet();
     bullet.kill();
-    var blood = game.add.emitter(bullet.x, bullet.y, 20);
-    blood.makeParticles('blood');
-    blood.gravity = 0;
-    blood.forEach(function(particle){
-      particle.tint = 0x444444;
-    });
-
-    blood.start(false, 200, 100, 20, 10);
-    blood.update();
-    setTimeout(function() {
-      bullet.destroy();
-    });
+    Effects.splatter(game, bullet.x, bullet.y, 10, 200, 0x444444);
   }
 
   function resetPlayerHealth(player, health) {

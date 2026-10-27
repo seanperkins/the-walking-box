@@ -1,5 +1,11 @@
+html, body {
+  height: 100%;
+}
+
 body {
   margin: 0;
+  display: flex;
+  flex-direction: column;
   background: gray;
 }
 
@@ -20,7 +26,12 @@ body {
   font-size: 14px;
 }
 
+#game {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 #game canvas {
   display: block;
-  margin: auto;
 }

@@ -18,6 +18,11 @@ module.exports = function(game) {
 
     game.stage.backgroundColor = '#222222';
 
+    // Scale the fixed-size game to fit the space under the header, keeping its aspect ratio.
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    game.scale.pageAlignHorizontally = true;
+    game.scale.pageAlignVertically = true;
+
     game.sound.mute = properties.mute;
 
     game.state.start('preloader');

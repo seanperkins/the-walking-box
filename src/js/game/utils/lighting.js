@@ -1,9 +1,8 @@
 var Lighting = function(game) {
 
-  // Create a bitmap texture for drawing light cones
-  this.bitmap = game.add.bitmapData(game.world.width, game.world.height);
-  this.bitmap.context.fillStyle = 'rgb(255, 255, 255)';
-  this.bitmap.context.strokeStyle = 'rgb(255, 255, 255)';
+  // Create a screen-sized bitmap for drawing light cones. Each frame it is moved to the
+  // camera and drawn in world coordinates by offsetting the context by the same amount.
+  this.bitmap = game.add.bitmapData(game.camera.width, game.camera.height);
   this.lightBitmap = game.add.image(0, 0, this.bitmap);
 
   // This bitmap is drawn onto the screen using the MULTIPLY blend mode.
@@ -14,11 +13,6 @@ var Lighting = function(game) {
   // you'll see gray shadows and white light instead of colors and it
   // generally won't look nearly as cool. So use a browser with WebGL.
   this.lightBitmap.blendMode = Phaser.blendModes.MULTIPLY;
-
-  // Create a bitmap for drawing rays
-  this.rayBitmap = game.add.bitmapData(game.world.width, game.world.height);
-  this.rayBitmapImage = game.add.image(0, 0, this.rayBitmap);
-  this.rayBitmapImage.visible = false;
 };
 
 Lighting.prototype.constructor = Lighting;
@@ -65,6 +59,9 @@ Lighting.prototype.update = function(game, player, objects){
   var zeroedY = game.camera.y;
   var limitedX = zeroedX + game.camera.width;
   var limitedY = zeroedY + game.camera.height;
+
+  this.lightBitmap.position.setTo(zeroedX, zeroedY);
+  this.bitmap.context.setTransform(1, 0, 0, 1, -zeroedX, -zeroedY);
 
   // Fill the entire light bitmap with a dark shadow color.
   this.bitmap.context.fillStyle = 'rgb(50, 50, 50)';
@@ -248,25 +245,9 @@ Lighting.prototype.update = function(game, player, objects){
   this.bitmap.context.closePath();
   this.bitmap.context.fill();
 
-  // Draw each of the rays on the rayBitmap
-  this.rayBitmap.context.clearRect(zeroedX, zeroedY, game.camera.width, game.camera.height);
-  this.rayBitmap.context.beginPath();
-  this.rayBitmap.context.strokeStyle = 'rgb(255, 255, 255)';
-  this.rayBitmap.context.fillStyle = 'rgb(255, 255, 255)';
-  this.rayBitmap.context.moveTo(points[0].x, points[0].y);
-  for(var k = 0; k < points.length; k++) {
-    this.rayBitmap.context.moveTo(player.x, player.y);
-    this.rayBitmap.context.lineTo(points[k].x, points[k].y);
-    this.rayBitmap.context.fillRect(points[k].x-2, points[k].y-2, 4, 4);
-  }
-  this.rayBitmap.context.stroke();
-
   // This just tells the engine it should update the texture cache
+  this.bitmap.context.setTransform(1, 0, 0, 1, 0, 0);
   this.bitmap.dirty = true;
-  this.rayBitmap.dirty = true;
-
-  //Line for debugging
-  // rayBitmapImage.visible = true;
 };
 
 module.exports = Lighting;
