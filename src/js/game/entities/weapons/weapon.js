@@ -1,6 +1,6 @@
 var _ = require('lodash');
-var Utilities = require('../utils/utilities');
-var Sound = require('../utils/sound');
+var Aim = require('../../utils/aim');
+var Sound = require('../../utils/sound');
 
 var BULLET_LIFESPAN = 1500;
 
@@ -53,11 +53,11 @@ Weapon.prototype.emitBullet = function(speed, rotation, player, bullets) {
   }
   bullet.lifespan = BULLET_LIFESPAN;
 
-  Utilities.setBulletSpeed(bullet, rotation, speed);
+  Aim.setVelocity(bullet, rotation, speed);
 };
 
 Weapon.prototype.emitBullets = function(player, bullets) {
-  var rotation = Utilities.calculateRotation(this.game, player);
+  var rotation = Aim.toPointer(this.game, player);
   this.emitBullet(this.BULLET_SPEED, rotation, player, bullets);
 };
 

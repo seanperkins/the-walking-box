@@ -1,4 +1,4 @@
-var Utilities = require('../utils/utilities');
+var Aim = require('../utils/aim');
 var Sound = require('../utils/sound');
 var Effects = require('../utils/effects');
 var Revolver = require('./weapons/revolver');
@@ -39,13 +39,21 @@ Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
 
 Player.prototype.update = function() {
-  Utilities.resetEntity(this);
-  this.movePlayer();
-  this.rotatePlayer();
+  this.move();
+  this.rotation = Aim.toPointer(this.game, this);
   this.weapon.update();
 
   // Blink while spawn protection lasts.
   this.alpha = this.isProtected() && Math.floor(this.game.time.now / 100) % 2 ? 0.3 : 1;
+};
+
+// WASD, with diagonals at full speed on both axes.
+Player.prototype.move = function() {
+  var keyboard = this.game.input.keyboard,
+      dx = keyboard.isDown(Phaser.Keyboard.D) - keyboard.isDown(Phaser.Keyboard.A),
+      dy = keyboard.isDown(Phaser.Keyboard.S) - keyboard.isDown(Phaser.Keyboard.W);
+
+  this.body.velocity.setTo(dx * this.baseSpeed, dy * this.baseSpeed);
 };
 
 Player.prototype.equip = function(index) {
@@ -62,48 +70,6 @@ Player.prototype.shoot = function(bullets) {
 
 Player.prototype.isProtected = function() {
   return this.game.time.now < this.protectedUntil;
-};
-
-Player.prototype.movePlayer = function() {
-  var IS_W_DOWN = this.game.input.keyboard.isDown(Phaser.Keyboard.W),
-      IS_A_DOWN = this.game.input.keyboard.isDown(Phaser.Keyboard.A),
-      IS_S_DOWN = this.game.input.keyboard.isDown(Phaser.Keyboard.S),
-      IS_D_DOWN = this.game.input.keyboard.isDown(Phaser.Keyboard.D),
-      direction;
-
-  if (IS_W_DOWN && !IS_A_DOWN && !IS_D_DOWN) {
-    direction = 'n';
-  }
-  else if (IS_D_DOWN && IS_W_DOWN && !IS_S_DOWN) {
-    direction = 'ne';
-  }
-  else if (IS_D_DOWN && !IS_W_DOWN && !IS_S_DOWN) {
-    direction = 'e';
-  }
-  else if (IS_D_DOWN && !IS_W_DOWN && IS_S_DOWN) {
-    direction = 'se';
-  }
-  else if (IS_S_DOWN && !IS_A_DOWN && !IS_D_DOWN) {
-    direction = 's';
-  }
-  else if (IS_A_DOWN && !IS_W_DOWN && IS_S_DOWN) {
-    direction = 'sw';
-  }
-  else if (IS_A_DOWN && !IS_W_DOWN && !IS_S_DOWN) {
-    direction = 'w';
-  }
-  else if (IS_A_DOWN && IS_W_DOWN && !IS_S_DOWN) {
-    direction = 'nw';
-  }
-
-  if(!!direction) {
-    Utilities.setSpeed(this, direction, this.baseSpeed);
-  }
-};
-
-Player.prototype.rotatePlayer = function() {
-  var angleInRadians = Utilities.calculateRotation(this.game, this);
-  this.rotation = angleInRadians;
 };
 
 Player.prototype.isDead = function() {

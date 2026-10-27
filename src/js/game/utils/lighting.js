@@ -1,252 +1,135 @@
+// Line-of-sight lighting: rays are cast from the player past the corners of every on-screen
+// occluder, and the lit polygon they outline is multiplied over the scene so everything
+// outside it falls into shadow.
 var Lighting = function(game) {
+  this.game = game;
 
-  // Create a screen-sized bitmap for drawing light cones. Each frame it is moved to the
-  // camera and drawn in world coordinates by offsetting the context by the same amount.
+  // A screen-sized bitmap, moved to the camera each frame and drawn in world coordinates
+  // by offsetting the context by the same amount.
   this.bitmap = game.add.bitmapData(game.camera.width, game.camera.height);
-  this.lightBitmap = game.add.image(0, 0, this.bitmap);
+  this.image = game.add.image(0, 0, this.bitmap);
 
-  // This bitmap is drawn onto the screen using the MULTIPLY blend mode.
-  // Since this bitmap is over the background, dark areas of the bitmap
-  // will make the background darker. White areas of the bitmap will allow
-  // the normal colors of the background to show through. Blend modes are
-  // only supported in WebGL. If your browser doesn't support WebGL then
-  // you'll see gray shadows and white light instead of colors and it
-  // generally won't look nearly as cool. So use a browser with WebGL.
-  this.lightBitmap.blendMode = Phaser.blendModes.MULTIPLY;
+  // MULTIPLY lets white (lit) areas show the scene and darkens the rest. Blend modes need WebGL;
+  // on canvas you get grey shadows and white light instead.
+  this.image.blendMode = Phaser.blendModes.MULTIPLY;
 };
 
-Lighting.prototype.constructor = Lighting;
-
-//Returns closes intersection
-function getWallIntersection(game, ray, walls) {
-  var distanceToWall = Number.POSITIVE_INFINITY;
-  var closestIntersection = null;
-
-  // For each of the walls...
-  walls.forEach(function(wall) {
-      // Create an array of lines that represent the four edges of each wall
-      var lines = [
-          new Phaser.Line(wall.x, wall.y, wall.x + wall.width, wall.y),
-          new Phaser.Line(wall.x, wall.y, wall.x, wall.y + wall.height),
-          new Phaser.Line(wall.x + wall.width, wall.y,
-              wall.x + wall.width, wall.y + wall.height),
-          new Phaser.Line(wall.x, wall.y + wall.height,
-              wall.x + wall.width, wall.y + wall.height)
-      ];
-
-      // Test each of the edges in this wall against the ray.
-      // If the ray intersects any of the edges then the wall must be in the way.
-      for(var i = 0; i < lines.length; i++) {
-          var intersect = Phaser.Line.intersects(ray, lines[i]);
-          if (intersect) {
-              // Find the closest intersection
-              var distance = game.math.distance(ray.start.x, ray.start.y, intersect.x, intersect.y);
-              if (distance < distanceToWall) {
-                  distanceToWall = distance;
-                  closestIntersection = intersect;
-              }
-          }
-      }
-  }, this);
-
-  return closestIntersection;
+function edges(rect) {
+  return [
+    new Phaser.Line(rect.x, rect.y, rect.x + rect.width, rect.y),
+    new Phaser.Line(rect.x, rect.y, rect.x, rect.y + rect.height),
+    new Phaser.Line(rect.x + rect.width, rect.y, rect.x + rect.width, rect.y + rect.height),
+    new Phaser.Line(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height)
+  ];
 }
 
-Lighting.prototype.update = function(game, player, objects){
+// Closest point where the ray hits any occluder edge, or null.
+function closestIntersection(ray, occluders) {
+  var closest = null,
+      closestDistance = Number.POSITIVE_INFINITY;
 
-  //These are the equivelent of zero x and y values for the screen
-  var zeroedX = game.camera.x;
-  var zeroedY = game.camera.y;
-  var limitedX = zeroedX + game.camera.width;
-  var limitedY = zeroedY + game.camera.height;
-
-  this.lightBitmap.position.setTo(zeroedX, zeroedY);
-  this.bitmap.context.setTransform(1, 0, 0, 1, -zeroedX, -zeroedY);
-
-  // Fill the entire light bitmap with a dark shadow color.
-  this.bitmap.context.fillStyle = 'rgb(50, 50, 50)';
-  this.bitmap.context.fillRect(zeroedX, zeroedY, game.camera.width, game.camera.height);
-
-  // An array of the stage corners that we'll use later
-  var stageCorners = [
-    new Phaser.Point(zeroedX, zeroedY),
-    new Phaser.Point(limitedX, zeroedY),
-    new Phaser.Point(limitedX, limitedY),
-    new Phaser.Point(zeroedX,  limitedY)
-  ];
-
-  // Ray casting!
-  // Cast rays through the corners of each wall towards the stage edge.
-  // Save all of the intersection points or ray end points if there was no intersection.
-  var points = [];
-  var ray = null;
-  var intersect;
-  var i;
-
-  //Accepts a collection of entities
-  objects.forEach(function(wall) {
-
-    //Check to see if objects are within camera before calculating rays
-    //This saves on processing and also helps with rendering
-    if (wall.inCamera) {
-
-      // Create a ray from the light through each corner out to the edge of the stage.
-      // This array defines points just inside of each corner to make sure we hit each one.
-      // It also defines points just outside of each corner so we can see to the stage edges.
-      var corners = [
-          new Phaser.Point(wall.x+0.1, wall.y+0.1),
-          new Phaser.Point(wall.x-0.1, wall.y-0.1),
-
-          new Phaser.Point(wall.x-0.1 + wall.width, wall.y+0.1),
-          new Phaser.Point(wall.x+0.1 + wall.width, wall.y-0.1),
-
-          new Phaser.Point(wall.x-0.1 + wall.width, wall.y-0.1 + wall.height),
-          new Phaser.Point(wall.x+0.1 + wall.width, wall.y+0.1 + wall.height),
-
-          new Phaser.Point(wall.x+0.1, wall.y-0.1 + wall.height),
-          new Phaser.Point(wall.x-0.1, wall.y+0.1 + wall.height)
-      ];
-
-      // Calculate rays through each point to the edge of the stage
-      for(i = 0; i < corners.length; i++) {
-          var c = corners[i];
-
-          // Here comes the linear algebra.
-          // The equation for a line is y = slope * x + b
-          // b is where the line crosses the left edge of the stage
-          var slope = (c.y - player.y) / (c.x - player.x);
-          var b = player.y - slope * player.x;
-
-          var end = null;
-
-          if (c.x === player.x) {
-              // Vertical lines are a special case
-              if (c.y <= player.y) {
-                  end = new Phaser.Point(player.x, zeroedY);
-              } else {
-                  end = new Phaser.Point(player.x, limitedY);
-              }
-          } else if (c.y === player.y) {
-              // Horizontal lines are a special case
-              if (c.x <= player.x) {
-                  end = new Phaser.Point(zeroedX, player.y);
-              } else {
-                  end = new Phaser.Point(limitedX, player.y);
-              }
-          } else {
-              // Find the point where the line crosses the stage edge
-              var left = new Phaser.Point(zeroedX, (slope*zeroedX)+b);
-              var right = new Phaser.Point(limitedX, (slope*limitedX)+b);
-              var top = new Phaser.Point((zeroedY-b)/slope, zeroedY);
-              var bottom = new Phaser.Point((limitedY-b)/slope, limitedY);
-
-              // Get the actual intersection point
-              if (c.y <= player.y && c.x >= player.x) {
-                  if (top.x >= zeroedX && top.x <= limitedX) {
-                      end = top;
-                  } else {
-                      end = right;
-                  }
-              } else if (c.y <= player.y && c.x <= player.x) {
-                  if (top.x >= zeroedX && top.x <= limitedX) {
-                      end = top;
-                  } else {
-                      end = left;
-                  }
-              } else if (c.y >= player.y && c.x >= player.x) {
-                  if (bottom.x >= zeroedX && bottom.x <= limitedX) {
-                      end = bottom;
-                  } else {
-                      end = right;
-                  }
-              } else if (c.y >= player.y && c.x <= player.x) {
-                  if (bottom.x >= zeroedX && bottom.x <= limitedX) {
-                      end = bottom;
-                  } else {
-                      end = left;
-                  }
-              }
-          }
-
-          // Create a ray
-          ray = new Phaser.Line(player.x, player.y, end.x, end.y);
-
-          // Check if the ray intersected the wall
-          intersect = getWallIntersection(game, ray, objects);
-          if (intersect) {
-              // This is the front edge of the light blocking object
-              points.push(intersect);
-          } else {
-              // Nothing blocked the ray
-              points.push(ray.end);
-          }
-      }
-    }// End If for inCamera
-  });
-
-  // Shoot rays at each of the stage corners to see if the corner
-  // of the stage is in shadow. This needs to be done so that
-  // shadows don't cut the corner.
-  for(i = 0; i < stageCorners.length; i++) {
-    ray = new Phaser.Line(player.x, player.y,
-        stageCorners[i].x, stageCorners[i].y);
-    intersect = getWallIntersection(game, ray, objects);
-    if (!intersect) {
-        // Corner is in light
-        points.push(stageCorners[i]);
-    }
-  }
-
-  // Now sort the points clockwise around the light
-  // Sorting is required so that the points are connected in the right order.
-  //
-  // This sorting algorithm was copied from Stack Overflow:
-  // http://stackoverflow.com/questions/6989100/sort-points-in-clockwise-order
-  //
-  // Here's a pseudo-code implementation if you want to code it yourself:
-  // http://en.wikipedia.org/wiki/Graham_scan
-  var center = { x: player.x, y: player.y };
-  points = points.sort(function(a, b) {
-    if (a.x - center.x >= 0 && b.x - center.x < 0) {
-        return 1;
-    }
-    if (a.x - center.x < 0 && b.x - center.x >= 0) {
-        return -1;
-    }
-    if (a.x - center.x === 0 && b.x - center.x === 0) {
-        if (a.y - center.y >= 0 || b.y - center.y >= 0) {
-            return 1;
+  occluders.forEach(function(lines) {
+    for (var i = 0; i < lines.length; i++) {
+      var hit = Phaser.Line.intersects(ray, lines[i]);
+      if (hit) {
+        var distance = Phaser.Math.distance(ray.start.x, ray.start.y, hit.x, hit.y);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closest = hit;
         }
-        return -1;
+      }
     }
-
-    // Compute the cross product of vectors (center -> a) x (center -> b)
-    var det = (a.x - center.x) * (b.y - center.y) - (b.x - center.x) * (a.y - center.y);
-    if (det < 0) {
-        return 1;
-    }
-    if (det > 0) {
-        return -1;
-    }
-
-    return 1;
   });
 
-  // Connect the dots and fill in the shape, which are cones of light,
-  // with a bright white color. When multiplied with the background,
-  // the white color will allow the full color of the background to
-  // shine through.
-  this.bitmap.context.beginPath();
-  this.bitmap.context.fillStyle = 'rgb(255, 255, 255)';
-  this.bitmap.context.moveTo(points[0].x, points[0].y);
-  for(var j = 0; j < points.length; j++) {
-    this.bitmap.context.lineTo(points[j].x, points[j].y);
-  }
-  this.bitmap.context.closePath();
-  this.bitmap.context.fill();
+  return closest;
+}
 
-  // This just tells the engine it should update the texture cache
-  this.bitmap.context.setTransform(1, 0, 0, 1, 0, 0);
+// Where a ray from origin through target leaves the view rectangle.
+function exitPoint(origin, target, view) {
+  var dx = target.x - origin.x,
+      dy = target.y - origin.y,
+      t = Number.POSITIVE_INFINITY;
+
+  if (dx > 0) { t = Math.min(t, (view.right - origin.x) / dx); }
+  if (dx < 0) { t = Math.min(t, (view.x - origin.x) / dx); }
+  if (dy > 0) { t = Math.min(t, (view.bottom - origin.y) / dy); }
+  if (dy < 0) { t = Math.min(t, (view.y - origin.y) / dy); }
+  if (t === Number.POSITIVE_INFINITY) { return target; }
+
+  return new Phaser.Point(origin.x + dx * t, origin.y + dy * t);
+}
+
+// Points just inside and just outside each corner, so rays both hit the corner and graze past it.
+function cornerTargets(rect) {
+  var left = rect.x, top = rect.y, right = rect.x + rect.width, bottom = rect.y + rect.height;
+  return [
+    new Phaser.Point(left + 0.1, top + 0.1), new Phaser.Point(left - 0.1, top - 0.1),
+    new Phaser.Point(right - 0.1, top + 0.1), new Phaser.Point(right + 0.1, top - 0.1),
+    new Phaser.Point(right - 0.1, bottom - 0.1), new Phaser.Point(right + 0.1, bottom + 0.1),
+    new Phaser.Point(left + 0.1, bottom - 0.1), new Phaser.Point(left - 0.1, bottom + 0.1)
+  ];
+}
+
+// Sort clockwise around the light so the polygon connects in order.
+// See http://stackoverflow.com/questions/6989100/sort-points-in-clockwise-order
+function clockwise(center) {
+  return function(a, b) {
+    if (a.x - center.x >= 0 && b.x - center.x < 0) { return 1; }
+    if (a.x - center.x < 0 && b.x - center.x >= 0) { return -1; }
+    if (a.x - center.x === 0 && b.x - center.x === 0) {
+      return (a.y - center.y >= 0 || b.y - center.y >= 0) ? 1 : -1;
+    }
+    var det = (a.x - center.x) * (b.y - center.y) - (b.x - center.x) * (a.y - center.y);
+    return det > 0 ? -1 : 1;
+  };
+}
+
+// Lights the scene from the player; objects is a group of rectangular occluders.
+Lighting.prototype.update = function(player, objects) {
+  var view = this.game.camera.view,
+      context = this.bitmap.context,
+      light = new Phaser.Point(player.x, player.y),
+      visible = objects.filter(function(object) { return object.inCamera; }).list,
+      occluders = visible.map(edges),
+      points = [];
+
+  function castThrough(target) {
+    var end = exitPoint(light, target, view);
+    points.push(closestIntersection(new Phaser.Line(light.x, light.y, end.x, end.y), occluders) || end);
+  }
+
+  visible.forEach(function(object) {
+    cornerTargets(object).forEach(castThrough);
+  });
+
+  // Rays to the corners of the view so shadows don't cut across them.
+  [ new Phaser.Point(view.x, view.y), new Phaser.Point(view.right, view.y),
+    new Phaser.Point(view.right, view.bottom), new Phaser.Point(view.x, view.bottom)
+  ].forEach(function(corner) {
+    if (!closestIntersection(new Phaser.Line(light.x, light.y, corner.x, corner.y), occluders)) {
+      points.push(corner);
+    }
+  });
+
+  points.sort(clockwise(light));
+
+  this.image.position.setTo(view.x, view.y);
+  context.setTransform(1, 0, 0, 1, -view.x, -view.y);
+
+  // Shadow everywhere, then the lit polygon in white.
+  context.fillStyle = 'rgb(50, 50, 50)';
+  context.fillRect(view.x, view.y, view.width, view.height);
+
+  context.beginPath();
+  context.fillStyle = 'rgb(255, 255, 255)';
+  context.moveTo(points[0].x, points[0].y);
+  for (var i = 1; i < points.length; i++) {
+    context.lineTo(points[i].x, points[i].y);
+  }
+  context.closePath();
+  context.fill();
+
+  context.setTransform(1, 0, 0, 1, 0, 0);
   this.bitmap.dirty = true;
 };
 

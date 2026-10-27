@@ -1,5 +1,10 @@
 # Change Log
 
+*October 27, 2026 — structure (#12)*
++ Split the game state into entities, world (city, waves), ui (death screen, debug counts) and utils modules
++ Zombie, Building and HealthPack are classes; removed unused boid helpers and a duplicate per-frame zombie update
++ Simpler player movement and lighting ray maths; lint now passes and runs in CI
+
 *October 27, 2026 — performance and fit*
 + Particle emitters destroy themselves after fading, and bullets are pooled with a 1.5s lifespan (they previously flew forever)
 + Lighting draws into one screen-sized canvas instead of two 3000×3000 ones
