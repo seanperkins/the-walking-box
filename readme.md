@@ -17,6 +17,14 @@ Requires Node.js 20+.
     npm run lint
 
 Game code lives in `src/js/game` and is bundled with [esbuild](https://esbuild.github.io/).
+
+    src/js/game/
+      states/    boot, preloader, game (wires everything together each frame)
+      entities/  player, zombie (flocking), building, health-pack, weapons/
+      world/     city generation, waves
+      ui/        death screen, ?debug counts
+      utils/     lighting, sound, particle effects, aiming
+
 The engine is [Phaser CE](https://github.com/photonstorm/phaser-ce) (the maintained Phaser 2 line),
 loaded as a global from `js/phaser.min.js`. Images and audio in `src/images` and `src/audio` are
 copied into `build/` as-is. Sound effects are synthesised with WebAudio in `src/js/game/utils/sound.js`.

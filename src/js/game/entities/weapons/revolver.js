@@ -1,4 +1,4 @@
-var Weapon = require('../weapon');
+var Weapon = require('./weapon');
 
 var Revolver = function() {
   this.CLIP_SIZE = 6;

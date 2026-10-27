@@ -1,57 +1,50 @@
 var _ = require('lodash'),
-        zombieLogic = require('./zombie')();
+    Zombie = require('./zombie');
 
-module.exports = function() {
+var SPAWNING_DISTANCE = 600;
 
-  var logic = {},
-      SPAWNING_DISTANCE = 600,
-      BUILDING_SIZE = 300;
+// A building that releases a crowd of lazy zombies the first time the player comes near.
+var Building = function(game, x, y) {
+  Phaser.Sprite.call(this, game, x, y, 'building');
+  game.physics.arcade.enableBody(this);
+  this.body.immovable = true;
+  this.hasSpawned = false;
+};
 
-  function checkSpawn(player, building) {
-    var playerX = player.position.x,
-        playerY = player.position.y,
-        buildingX = building.position.x+BUILDING_SIZE/2,
-        buildingY = building.position.y+BUILDING_SIZE/2,
-        diffX = Math.abs(playerX - buildingX),
-        diffY = Math.abs(playerY - buildingY),
-        distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
+Building.prototype = Object.create(Phaser.Sprite.prototype);
+Building.prototype.constructor = Building;
 
-    return distance < SPAWNING_DISTANCE + BUILDING_SIZE/2;
+Building.prototype.distanceTo = function(sprite) {
+  return Phaser.Math.distance(sprite.x, sprite.y, this.x + this.width/2, this.y + this.height/2);
+};
+
+Building.prototype.inSpawnRange = function(player) {
+  return this.distanceTo(player) < SPAWNING_DISTANCE + this.width/2;
+};
+
+Building.prototype.spawnZombies = function(zombies, player) {
+  if (this.hasSpawned || !this.inSpawnRange(player)) {
+    return;
+  }
+  this.hasSpawned = true;
+
+  var centerX = this.x + this.width/2,
+      centerY = this.y + this.height/2,
+      dx = player.x - centerX,
+      dy = player.y - centerY,
+      offset = 125;
+
+  // Zombies spawn on the side of the building facing the player.
+  if (Math.abs(dx) > Math.abs(dy)) {
+    centerX += dx > 0 ? offset : -offset;
+  } else {
+    centerY += dy > 0 ? offset : -offset;
   }
 
-  logic.inSpawnRange = checkSpawn;
-
-  logic.spawnZombiesFromBuilding = function (game, zombies, player, building) {
-    if ( !building.hasSpawned && checkSpawn(player, building) ) {
-      var playerX = player.position.x,
-          playerY = player.position.y,
-          buildingX = building.position.x+BUILDING_SIZE/2,
-          buildingY = building.position.y+BUILDING_SIZE/2,
-          x = playerX - buildingX,
-          y = playerY - buildingY,
-          AdjustX = 0,
-          AdjustY = 0;
-
-      //Zombies should spawn on the correct side of the building to swarm the player
-      if (Math.abs(x) > Math.abs(y)) {
-        if (x > 0) {
-          AdjustX = 125;
-        } else {
-          AdjustX = -125;
-        }
-      } else {
-        if (y > 0) {
-          AdjustY = 125;
-        } else {
-          AdjustY = -125;
-        }
-      }
-      for (var i = 0; i <= _.random(1,12); i++) {
-        zombieLogic.spawnZombie(game, player, zombies, buildingX+AdjustX, buildingY+AdjustY, {roamer: false});
-      }
-      building.hasSpawned = true;
-    }
-  };
-
-  return logic;
+  var count = _.random(2, 13);
+  for (var i = 0; i < count; i++) {
+    Zombie.spawn(this.game, zombies, player, centerX, centerY, {roamer: false});
+  }
 };
+
+module.exports = Building;
