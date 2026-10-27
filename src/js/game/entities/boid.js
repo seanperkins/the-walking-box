@@ -12,7 +12,7 @@ var Boid = function(game, x, y, group, options) {
   
   this.body.collideWorldBounds = true;
 
-  this.maxVelocity = _.random(150, 210, true);
+  this.maxVelocity = _.random(150, 210, true) * (this.options.speed || 1);
   this.maxForce = 10.0;
   this.seekForce = 14;
 

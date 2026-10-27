@@ -1,5 +1,14 @@
 # Change Log
 
+*October 27, 2026 — gameplay loop*
++ Waves of roaming zombies every 25s, bigger and faster each time
++ Death screen shows survival time, kills, wave and best run (stored locally); Enter restarts the run
++ Three seconds of spawn protection, a safe spawn area, and buildings near spawn start empty
++ Revolver and shotgun (from #43) owned by the player (#44); switch with 1/2 or Q; ammo is per weapon
++ Reload refills the clip beside the player instead of showing text
++ Synthesised sound: gunshots, reload clicks, splats, ricochets, hits, death, and zombie groans that grow louder as they close in (#5)
++ FPS meter and counts only with `?debug`
+
 *October 27, 2026*
 + Replace Grunt/Browserify/Jade/Sass with esbuild and plain HTML/CSS
 + Upgrade Phaser 2.3 to Phaser CE 2.21, lodash 2 to 4, debug 2 to 4, vendored Stats to stats.js

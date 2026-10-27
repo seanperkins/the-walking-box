@@ -13,6 +13,7 @@ module.exports = function() {
                                     options
                                       ));
     zombie.target = target;
+    return zombie;
   };
 
   logic.bleed = function(game, zombie){
