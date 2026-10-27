@@ -47,15 +47,22 @@ Waves.prototype.spawnWave = function() {
   this.nextWave = this.game.time.now + WAVE_INTERVAL;
 };
 
+// The nearest zombie groans from its side of the player, so unseen zombies can still be placed.
 Waves.prototype.groan = function() {
   var player = this.player,
-      nearest = Number.MAX_VALUE;
+      nearest = null,
+      nearestDistance = Number.MAX_VALUE;
 
   this.zombies.forEachAlive(function(zombie) {
-    nearest = Math.min(nearest, Phaser.Math.distance(zombie.x, zombie.y, player.x, player.y));
+    var d = Phaser.Math.distance(zombie.x, zombie.y, player.x, player.y);
+    if (d < nearestDistance) {
+      nearestDistance = d;
+      nearest = zombie;
+    }
   });
-  if (nearest < GROAN_RANGE) {
-    Sound.groan(1 - nearest / GROAN_RANGE);
+  if (nearest && nearestDistance < GROAN_RANGE) {
+    var pan = Math.max(-1, Math.min(1, (nearest.x - player.x) / GROAN_RANGE));
+    Sound.groan(1 - nearestDistance / GROAN_RANGE, pan);
   }
   this.nextGroan = this.game.time.now + _.random(800, 2500);
 };

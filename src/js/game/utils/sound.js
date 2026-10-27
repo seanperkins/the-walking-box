@@ -78,6 +78,15 @@ function tone(options) {
       length = options.attack + options.decay,
       out = envelope(options.volume, options.attack, options.decay);
 
+  // Optional stereo position, -1 (left) to 1 (right).
+  if (options.pan && ctx.createStereoPanner) {
+    var panner = ctx.createStereoPanner();
+    panner.pan.value = options.pan;
+    out.disconnect();
+    out.connect(panner);
+    panner.connect(master);
+  }
+
   osc.type = options.type;
   osc.frequency.setValueAtTime(options.from, t);
   osc.frequency.exponentialRampToValueAtTime(options.to, t + length);
@@ -127,11 +136,11 @@ Sound.hurt = function() {
   burst({ filter: 'lowpass', from: 600, to: 100, attack: 0.005, decay: 0.15, volume: 0.6 });
 };
 
-// closeness: 0 (far) to 1 (on top of the player).
-Sound.groan = function(closeness) {
+// closeness: 0 (far) to 1 (on top of the player); pan: -1 (left) to 1 (right).
+Sound.groan = function(closeness, pan) {
   var pitch = 70 + Math.random() * 40;
   tone({ type: 'sawtooth', from: pitch, to: pitch * 0.7, formant: 400 + Math.random() * 300,
-         attack: 0.15, decay: 0.6 + Math.random() * 0.5, volume: 0.05 + closeness * 0.5 });
+         attack: 0.15, decay: 0.6 + Math.random() * 0.5, volume: 0.05 + closeness * 0.5, pan: pan });
 };
 
 Sound.death = function() {

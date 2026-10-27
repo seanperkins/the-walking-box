@@ -1,6 +1,6 @@
 // Line-of-sight lighting: rays are cast from the player past the corners of every on-screen
 // occluder, and the lit polygon they outline is multiplied over the scene so everything
-// outside it falls into shadow.
+// outside it falls into shadow. Zombies in shadow are hidden entirely.
 var Lighting = function(game) {
   this.game = game;
 
@@ -113,6 +113,10 @@ Lighting.prototype.update = function(player, objects) {
 
   points.sort(clockwise(light));
 
+  // Kept for line-of-sight checks this frame.
+  this.light = light;
+  this.occluders = occluders;
+
   this.image.position.setTo(view.x, view.y);
   context.setTransform(1, 0, 0, 1, -view.x, -view.y);
 
@@ -131,6 +135,21 @@ Lighting.prototype.update = function(player, objects) {
 
   context.setTransform(1, 0, 0, 1, 0, 0);
   this.bitmap.dirty = true;
+};
+
+// Whether the player can see the point this frame (nothing in the way of the light).
+Lighting.prototype.canSee = function(point) {
+  return !closestIntersection(new Phaser.Line(this.light.x, this.light.y, point.x, point.y), this.occluders);
+};
+
+// Fades on-screen sprites in when the player can see them and out when they're in shadow.
+Lighting.prototype.hideUnseen = function(group) {
+  group.forEachAlive(function(sprite) {
+    if (sprite.inCamera) {
+      var target = this.canSee(sprite) ? 1 : 0;
+      sprite.alpha += (target - sprite.alpha) * (target ? 0.35 : 0.15);
+    }
+  }, this);
 };
 
 module.exports = Lighting;

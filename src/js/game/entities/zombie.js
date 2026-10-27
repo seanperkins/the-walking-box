@@ -7,6 +7,8 @@ var Zombie = function(game, x, y, group, target, options) {
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
   this.body.collideWorldBounds = true;
+  // Hidden until the player has line of sight (see Lighting#hideUnseen).
+  this.alpha = 0;
 
   this.group = group;
   this.target = target;

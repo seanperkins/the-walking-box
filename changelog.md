@@ -1,5 +1,9 @@
 # Change Log
 
+*October 27, 2026 — shadows hide zombies*
++ Zombies are only visible with line of sight from the player, fading in and out at the edge of the light
++ Groans are panned toward the nearest zombie, so unseen zombies can still be placed by ear
+
 *October 27, 2026 — enterable buildings (#14)*
 + Buildings are rooms: four walls, a doorway facing open ground, and a floor you only see by line of sight
 + Lazy zombies spawn inside and come out through the door; about a third of buildings hold a health pack
