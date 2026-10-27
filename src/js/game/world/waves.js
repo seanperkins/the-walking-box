@@ -8,8 +8,9 @@ var WAVE_INTERVAL = 25000,
     GROAN_RANGE = 600;
 
 // Sends a bigger, faster wave of roamers every WAVE_INTERVAL and lets the nearest zombie groan.
-var Waves = function(game, zombies, player) {
+var Waves = function(game, zombies, player, buildings) {
   this.game = game;
+  this.buildings = buildings;
   this.zombies = zombies;
   this.player = player;
   this.wave = 0;
@@ -22,11 +23,17 @@ Waves.prototype.spawnAwayFromPlayer = function(options) {
   for (var tries = 0; tries < 20; tries++) {
     x = this.game.world.randomX;
     y = this.game.world.randomY;
-    if (Phaser.Math.distance(x, y, this.player.x, this.player.y) > SAFE_SPAWN_DISTANCE) {
+    if (Phaser.Math.distance(x, y, this.player.x, this.player.y) > SAFE_SPAWN_DISTANCE && !this.inBuilding(x, y)) {
       break;
     }
   }
   Zombie.spawn(this.game, this.zombies, this.player, x, y, options);
+};
+
+// Whether a zombie scattered from (x, y) could land in a building's walls.
+Waves.prototype.inBuilding = function(x, y) {
+  var area = new Phaser.Rectangle(x - 15, y - 15, 130, 130);
+  return this.buildings.some(function(building) { return building.rect.intersects(area); });
 };
 
 Waves.prototype.spawnWave = function() {

@@ -24,9 +24,10 @@ var Zombie = function(game, x, y, group, target, options) {
 Zombie.prototype = Object.create(Phaser.Sprite.prototype);
 Zombie.prototype.constructor = Zombie;
 
-// Adds a zombie to the group near (x, y), scattered by up to 100px.
+// Adds a zombie to the group near (x, y), scattered by up to options.scatter (default 100px).
 Zombie.spawn = function(game, group, target, x, y, options) {
-  return group.add(new Zombie(game, x + _.random(0, 100), y + _.random(0, 100), group, target, options));
+  var scatter = options && options.scatter !== undefined ? options.scatter : 100;
+  return group.add(new Zombie(game, x + _.random(0, scatter), y + _.random(0, scatter), group, target, options));
 };
 
 Zombie.prototype.update = function() {
@@ -37,7 +38,9 @@ Zombie.prototype.update = function() {
   }
 
   if (this.target && this.target.exists) {
-    var seekAccel = this.seek(this.target.body.position);
+    // The group can provide a route function to steer through doors and around buildings.
+    var goal = this.group.route ? this.group.route(this.position, this.target.position) : this.target.position,
+        seekAccel = this.seek(goal);
     seekAccel.multiply(this.seekForce, this.seekForce);
     this.applyForce(seekAccel);
   }
@@ -52,7 +55,7 @@ Zombie.prototype.applyForce = function(force) {
 };
 
 Zombie.prototype.seek = function(target) {
-  var desired = Phaser.Point.subtract(target, this.body.position);
+  var desired = Phaser.Point.subtract(target, this.position);
 
   desired.normalize();
   desired.multiply(this.maxVelocity, this.maxVelocity);

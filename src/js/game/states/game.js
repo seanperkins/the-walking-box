@@ -3,6 +3,7 @@ var _ = require('lodash'),
     HealthPack = require('../entities/health-pack'),
     generateCity = require('../world/city'),
     Waves = require('../world/waves'),
+    Navigation = require('../world/navigation'),
     showDeathScreen = require('../ui/death-screen'),
     DebugCounts = require('../ui/debug-counts'),
     Lighting = require('../utils/lighting'),
@@ -12,10 +13,14 @@ var _ = require('lodash'),
 
 module.exports = function(game) {
 
+  var LOOT_CHANCE = 0.35;
+
   var gameState = {},
       staticObjects,
+      walls,
       buildings,
       zombies,
+      navigation,
       healthPacks,
       player,
       bullets,
@@ -68,9 +73,24 @@ module.exports = function(game) {
     // Creation order is draw order: city, zombies, pickups, player, bullets, then lighting on top.
     var city = generateCity(game);
     staticObjects = city.staticObjects;
+    walls = city.walls;
     buildings = city.buildings;
+
+    // Zombies follow a flow field through doors and around walls, cars and trees.
+    navigation = new Navigation(game, [walls, staticObjects]);
     zombies = game.add.group();
+    zombies.route = function(from, target) {
+      return navigation.nextStep(from) || target;
+    };
+
+    // Some buildings hold a health pack: a reason to go inside.
     healthPacks = game.add.group();
+    buildings.forEach(function(building) {
+      if (Math.random() < LOOT_CHANCE) {
+        var spot = building.randomInteriorPoint(30);
+        HealthPack.drop(game, healthPacks, spot.x, spot.y);
+      }
+    });
 
     player = new Player(game);
     run = { startedAt: game.time.now, kills: 0, over: false };
@@ -85,7 +105,7 @@ module.exports = function(game) {
 
     bullets = game.add.group();
 
-    waves = new Waves(game, zombies, player);
+    waves = new Waves(game, zombies, player, buildings);
     waves.spawnWave();
 
     lighting = new Lighting(game);
@@ -95,17 +115,18 @@ module.exports = function(game) {
 
   gameState.update = function() {
     game.camera.follow(player);
+    navigation.update(player.position);
 
     game.physics.arcade.collide(player, staticObjects);
     game.physics.arcade.collide(player, zombies, collisionDamageFn);
-    game.physics.arcade.collide(player, buildings);
+    game.physics.arcade.collide(player, walls);
 
     game.physics.arcade.collide(zombies, staticObjects);
     game.physics.arcade.collide(zombies, zombies);
-    game.physics.arcade.collide(zombies, buildings);
+    game.physics.arcade.collide(zombies, walls);
 
     game.physics.arcade.overlap(bullets, zombies, killZombie);
-    game.physics.arcade.overlap(bullets, buildings, bulletRicochet);
+    game.physics.arcade.overlap(bullets, walls, bulletRicochet);
     game.physics.arcade.overlap(player, healthPacks, pickUpHealth);
 
     if (!run.over) {
@@ -119,7 +140,7 @@ module.exports = function(game) {
       building.spawnZombies(zombies, player);
     });
 
-    lighting.update(player, buildings);
+    lighting.update(player, walls);
 
     if (debugCounts) {
       debugCounts.update(zombies, buildings, staticObjects);
