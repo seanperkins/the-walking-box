@@ -183,9 +183,13 @@ module.exports = function(game) {
 
     if(player.isDead() && !resetButton) {
       var message = 'ZOMBIES GOT HUNGRY!';
-      resetButton = game.add.button(game.camera.position.x, game.camera.position.y-130, 'button', clickResetButton, null, 2, 1, 0);
+      var centerX = game.camera.view.centerX,
+          centerY = game.camera.view.centerY;
+      resetButton = game.add.button(centerX, centerY-130, 'button', clickResetButton, null, 2, 1, 0);
+      resetButton.anchor.setTo(0.5, 0);
       player.kill();
-      resetText = game.add.text(game.camera.position.x, game.camera.position.y-230, message, { fontSize: '50px', fill: '#Ff3333' });
+      resetText = game.add.text(centerX, centerY-230, message, { fontSize: '50px', fill: '#Ff3333' });
+      resetText.anchor.setTo(0.5, 0);
     }
 
   };

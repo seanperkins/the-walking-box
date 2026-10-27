@@ -16,4 +16,5 @@ game.state.start('boot');
 
 if (process.browser) {
   window.gameDebug = require('debug');
+  window.game = game;
 }

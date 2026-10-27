@@ -25,7 +25,7 @@ Every push to `master` builds and deploys to GitHub Pages via `.github/workflows
 ### Debugging
 
 The [debug](https://www.npmjs.com/package/debug) module is exported to the window as `window.gameDebug`.
-Run `gameDebug.enable('walkingBox:*')` in the console to see game messages.
+Run `gameDebug.enable('walkingBox:*')` in the console to see game messages. The Phaser game instance is `window.game`.
 
 ## Credits
 
