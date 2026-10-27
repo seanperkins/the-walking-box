@@ -1,5 +1,4 @@
-var Phaser = require('Phaser'),
-    _ = require('lodash'),
+var _ = require('lodash'),
     properties = require('./properties'),
     states ={
       boot: require('./states/boot.js'),
@@ -17,4 +16,5 @@ game.state.start('boot');
 
 if (process.browser) {
   window.gameDebug = require('debug');
+  window.game = game;
 }

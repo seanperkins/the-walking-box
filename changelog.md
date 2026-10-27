@@ -1,4 +1,11 @@
-#Change Log
+# Change Log
+
+*October 27, 2026*
++ Replace Grunt/Browserify/Jade/Sass with esbuild and plain HTML/CSS
++ Upgrade Phaser 2.3 to Phaser CE 2.21, lodash 2 to 4, debug 2 to 4, vendored Stats to stats.js
++ Deploy to GitHub Pages instead of Heroku
++ Fix health packs dropping at full health (`maxHealth` typo)
++ Fix death message and restart button rendering off-screen under Phaser CE
 
 *April 12, 2015*
 + 37429d6653da66b3aae9a8f198cb450e4c7d132c zombies bleed like stuffed, pixelated pigs

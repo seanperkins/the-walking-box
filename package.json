@@ -1,71 +1,30 @@
 {
   "name": "the-walking-box",
-  "version": "0.1.0",
-  "description": "A Grunty Phaser.js SDK",
-  "main": "build/js/app.min.js",
+  "version": "0.2.0",
+  "description": "A game with no exposition but lots of zombies.",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "dev": "grunt",
-    "lint": "git diff --name-only --cached --relative | grep '\\.js$' | xargs jshint",
-    "shrinkwrap": "npm-shrinkwrap",
-    "postinstall": "grunt build"
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --serve",
+    "lint": "jshint src/js/game"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:seanperkins/the-walking-box.git"
+    "url": "git+https://github.com/seanperkins/the-walking-box.git"
   },
   "author": "Sean Perkins",
   "license": "MIT",
-  "browser": {
-    "lodash": "./node_modules/lodash/dist/lodash.compat.js",
-    "Stats": "./src/js/lib/stats.min.js"
-  },
-  "browserify-shim": {
-    "Phaser": {
-      "exports": "global:Phaser"
-    },
-    "lodash": {
-      "exports": "_"
-    },
-    "Stats": {
-      "exports": "Stats"
-    }
-  },
   "dependencies": {
-    "lodash": "^2.4.1",
-    "compression": "^1.4.3",
-    "debug": "^2.1.3",
-    "phaser": "^2.3.0"
+    "debug": "^4.4.3",
+    "lodash": "^4.17.21",
+    "phaser-ce": "^2.21.0",
+    "stats.js": "^0.17.0"
   },
   "devDependencies": {
-    "browserify": "^4.1.5",
-    "browserify-shim": "^3.5.0",
-    "connect": "^2.13.1",
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^2.1.0",
-    "grunt-cache-bust": "^0.3.6",
-    "grunt-cli": "^0.1.13",
-    "grunt-contrib-clean": "^0.5.0",
-    "grunt-contrib-compress": "^0.9.1",
-    "grunt-contrib-connect": "^0.7.1",
-    "grunt-contrib-copy": "^0.5.0",
-    "grunt-contrib-jade": "^0.11.0",
-    "grunt-contrib-jshint": "^0.10.0",
-    "grunt-contrib-uglify": "^0.4.0",
-    "grunt-contrib-watch": "^0.6.1",
-    "grunt-open": "^0.2.3",
-    "grunt-pngmin": "^0.6.1",
-    "grunt-sass": "^0.18.1",
-    "jshint": "^2.6.3",
-    "npm-shrinkwrap": "^5.3.0",
-    "pre-commit": "^1.0.6",
-    "serve-static": "^1.9.2"
+    "esbuild": "^0.28.2",
+    "jshint": "^2.13.6"
   },
   "engines": {
-    "node": "0.10.x",
-    "npm": "2.7.x"
-  },
-  "pre-commit": [
-    "lint"
-  ]
+    "node": ">=20"
+  }
 }

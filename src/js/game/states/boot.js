@@ -1,4 +1,4 @@
-var Stats = require('Stats')
+var Stats = require('stats.js')
   , properties = require('../properties');
 
 module.exports = function(game) {

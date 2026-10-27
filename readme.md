@@ -2,71 +2,32 @@
 
 A game with no exposition but lots of zombies.
 
-https://thewalkingbox.herokuapp.com/
+**Play it:** https://seanperkins.github.io/the-walking-box/
 
-## Requirements
-
-### Node.js
-
-You will need to first install [Node.js](http://nodejs.org/download/).
-
-### Getting Started
-
-
-    npm install
-
-And you should now be ready to spin up a development build of your new project:
-
-    npm run dev
+WASD to move, mouse to aim, click or space to shoot, R to reload.
 
 ## Developing
 
-Your first port of call will likely be to customise the properties found in `package.json` and `src/js/game/properties.js`.
+Requires Node.js 20+.
 
-All of the files required to run the game will live in the `src` folder, this will include any JavaScript, images, HTML ([Jade](http://jade-lang.com/)), and CSS ([Stylus](http://learnboost.github.io/stylus/)). When the default grunt task is invoked, these files are compiled to a `build` directory.
+    npm install
+    npm run dev     # http://localhost:3017, rebuilds on change (refresh to reload)
+    npm run build   # production build into build/
+    npm run lint
 
-Files in the `build` directory will always be generated and excluded from Git by the `.gitignore`, as such these will removed without warning and should generally not be edited.
+Game code lives in `src/js/game` and is bundled with [esbuild](https://esbuild.github.io/).
+The engine is [Phaser CE](https://github.com/photonstorm/phaser-ce) (the maintained Phaser 2 line),
+loaded as a global from `js/phaser.min.js`. Images and audio in `src/images` and `src/audio` are
+copied into `build/` as-is.
+
+Every push to `master` builds and deploys to GitHub Pages via `.github/workflows/pages.yml`.
 
 ### Debugging
 
-A [debug](https://www.npmjs.com/package/debug) module is exported to the window as `window.gameDebug`.
+The [debug](https://www.npmjs.com/package/debug) module is exported to the window as `window.gameDebug`.
+Run `gameDebug.enable('walkingBox:*')` in the console to see game messages. The Phaser game instance is `window.game`.
 
-To see all messages, write `gameDebug.enable('*')`. You can filter by module. All game messages are under the
-`'walkingBox:*'` namespace.
+## Credits
 
-### Available Targets
-
-Install the grunt-cli to use these (`npm install -g grunt-cli`).
-
-#### `grunt`
-
-Configures and runs an unminified development build optimised for fast watch performance with source maps and live reload.
-
-#### `grunt build`
-
-Creates an uglified, production ready build with no source maps.
-
-#### `grunt optimise`
-
-Lossy compression of all png's in the `src/images/` directory using [pngquant](http://pngquant.org/).
-
-(Linux users will need to have a version of pngquant available on their paths.)
-
-#### `grunt zip`
-
-Compiles the current build into `{title}.zip` with an internal folder. This is intended for use when transferring the build to a third party for webserver upload.
-
-#### `grunt cocoon`
-
-Compiles the current build into `{title}.zip` ready for upload to [CocoonJs](https://www.ludei.com/cocoonjs/).
-
-### Updating or Adding Libraries
-
-The project comes with an unminified version of Phaser with arcade physics, this can be replaced if you require updates or one of the alternate physics engines.
-
-When adding new libraries that aren't CommonJS compatible, you'll have to update the [Browserify Shim configuration](https://github.com/thlorenz/browserify-shim#3-provide-browserify-shim-config).
-
-## Created from A Phaser.js Boilerplate
-
-  Lots of thanks to Luke Wilde. Without the boiler plate we would have wasted hours I am sure.
-  https://github.com/lukewilde/phaser-js-boilerplate
+Originally built from Luke Wilde's [Phaser.js boilerplate](https://github.com/lukewilde/phaser-js-boilerplate).
+Without it we would have wasted hours, I am sure.
