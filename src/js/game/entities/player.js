@@ -1,5 +1,6 @@
 var Utilities = require('../utils/utilities');
 var Sound = require('../utils/sound');
+var Effects = require('../utils/effects');
 var Revolver = require('./weapons/revolver');
 var Shotgun = require('./weapons/shotgun');
 var debug = require('debug')('walkingBox:player');
@@ -114,6 +115,7 @@ Player.prototype.takeDamage = function() {
 
   if(this.body.health > 1 && !this.isProtected()) {
     Sound.hurt();
+    Effects.splatter(this.game, this.x, this.y, 25, 600);
     this.body.health = this.body.health - 1;
     var scalePercentage = 1 - ((this.maxPlayerHealth - this.body.health) * 0.05);
     this.scale.setTo(scalePercentage, scalePercentage);

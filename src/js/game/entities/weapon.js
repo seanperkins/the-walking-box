@@ -2,6 +2,8 @@ var _ = require('lodash');
 var Utilities = require('../utils/utilities');
 var Sound = require('../utils/sound');
 
+var BULLET_LIFESPAN = 1500;
+
 // Subclasses set CLIP_SIZE, RELOAD_SPEED (ms), FIRING_SPEED (ms) and BULLET_SPEED before calling Weapon.
 var Weapon = function(game, player) {
   this.game = game;
@@ -37,14 +39,19 @@ Weapon.prototype.setActive = function(active) {
 };
 
 Weapon.prototype.emitBullet = function(speed, rotation, player, bullets) {
-  var bullet = bullets.create(
+  // Reuse spent bullets; each one dies after BULLET_LIFESPAN or on leaving the world.
+  var bullet = bullets.getFirstDead(true,
         player.position.x+(Math.cos(rotation)*25),
         player.position.y+(Math.sin(rotation)*25),
         'bullet');
 
-  this.game.physics.enable(bullet, Phaser.Physics.ARCADE);
-  bullet.outOfBoundsKill = true;
-  bullet.anchor.setTo(0.5, 0.5);
+  if (!bullet.body) {
+    this.game.physics.enable(bullet, Phaser.Physics.ARCADE);
+    bullet.checkWorldBounds = true;
+    bullet.outOfBoundsKill = true;
+    bullet.anchor.setTo(0.5, 0.5);
+  }
+  bullet.lifespan = BULLET_LIFESPAN;
 
   Utilities.setBulletSpeed(bullet, rotation, speed);
 };
