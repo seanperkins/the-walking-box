@@ -1,5 +1,10 @@
 # Change Log
 
+*October 27, 2026 — enterable buildings (#14)*
++ Buildings are rooms: four walls, a doorway facing open ground, and a floor you only see by line of sight
++ Lazy zombies spawn inside and come out through the door; about a third of buildings hold a health pack
++ Zombies path-find with a flow field, so they use doors and walk around buildings, cars and trees
+
 *October 27, 2026 — structure (#12)*
 + Split the game state into entities, world (city, waves), ui (death screen, debug counts) and utils modules
 + Zombie, Building and HealthPack are classes; removed unused boid helpers and a duplicate per-frame zombie update

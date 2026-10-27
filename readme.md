@@ -5,7 +5,7 @@ A game with no exposition but lots of zombies.
 **Play it:** https://seanperkins.github.io/the-walking-box/
 
 WASD to move, mouse to aim, click or space to shoot, R to reload, 1/2 or Q to switch between revolver and shotgun.
-Survive the waves; your time, kills and best run show when the zombies get hungry. Enter restarts.
+Survive the waves, duck into buildings for cover and health packs; your time, kills and best run show when the zombies get hungry. Enter restarts.
 
 ## Developing
 
@@ -21,7 +21,7 @@ Game code lives in `src/js/game` and is bundled with [esbuild](https://esbuild.g
     src/js/game/
       states/    boot, preloader, game (wires everything together each frame)
       entities/  player, zombie (flocking), building, health-pack, weapons/
-      world/     city generation, waves
+      world/     city generation, waves, navigation (flow field)
       ui/        death screen, ?debug counts
       utils/     lighting, sound, particle effects, aiming
 
