@@ -2,9 +2,37 @@ var _ = require('lodash'),
     zombieLogic = require('../entities/zombie')(),
     Player = require('../entities/player'),
     buildingLogic = require('../entities/building')(),
-    weapon = require('../entities/weapon')(),
     Lighting = require('../utils/lighting'),
-    Utilities = require('../utils/utilities');
+    Utilities = require('../utils/utilities'),
+    Sound = require('../utils/sound'),
+    properties = require('../properties');
+
+var WAVE_INTERVAL = 25000,
+    MAX_ZOMBIES = 150,
+    SAFE_SPAWN_DISTANCE = 900,
+    GROAN_RANGE = 600,
+    BEST_KEY = 'walkingBox:best';
+
+function formatTime(ms) {
+  var seconds = Math.floor(ms / 1000),
+      remainder = seconds % 60;
+  return Math.floor(seconds / 60) + ':' + (remainder < 10 ? '0' : '') + remainder;
+}
+
+// Storage can be unavailable (private windows, blocked site data), so the best run is a nicety.
+function loadBest() {
+  try {
+    return JSON.parse(window.localStorage.getItem(BEST_KEY)) || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveBest(run) {
+  try {
+    window.localStorage.setItem(BEST_KEY, JSON.stringify(run));
+  } catch (e) {}
+}
 
 module.exports = function(game) {
 
@@ -17,9 +45,42 @@ module.exports = function(game) {
       lighting,
       collisionDamageFn,
       healthPacks,
-      resetButton,
-      resetText,
-      counts;
+      counts,
+      run;
+
+  function spawnAwayFromPlayer(options) {
+    var x, y;
+    for (var tries = 0; tries < 20; tries++) {
+      x = game.world.randomX;
+      y = game.world.randomY;
+      if (Phaser.Math.distance(x, y, player.x, player.y) > SAFE_SPAWN_DISTANCE) {
+        break;
+      }
+    }
+    zombieLogic.spawnZombie(game, player, zombies, x, y, options);
+  }
+
+  function spawnWave() {
+    run.wave++;
+    var size = Math.min(8 + run.wave * 6, MAX_ZOMBIES - zombies.length),
+        speed = Math.min(1 + (run.wave - 1) * 0.06, 1.6);
+
+    for (var k = 0; k < size; k++) {
+      spawnAwayFromPlayer({roamer: true, speed: speed});
+    }
+    run.nextWave = game.time.now + WAVE_INTERVAL;
+  }
+
+  function groan() {
+    var nearest = Number.MAX_VALUE;
+    zombies.forEachAlive(function(zombie) {
+      nearest = Math.min(nearest, Phaser.Math.distance(zombie.x, zombie.y, player.x, player.y));
+    });
+    if (nearest < GROAN_RANGE) {
+      Sound.groan(1 - nearest / GROAN_RANGE);
+    }
+    run.nextGroan = game.time.now + _.random(800, 2500);
+  }
 
   function populateHealthPack(x, y) {
     var healthPack = healthPacks.create(x, y, 'health-pack');
@@ -30,6 +91,8 @@ module.exports = function(game) {
   }
 
   function killZombie(bullet, zombie) {
+    run.kills++;
+    Sound.splat();
     zombieLogic.bleed(game, zombie);
     bullet.kill();
     setTimeout(function() {
@@ -47,6 +110,7 @@ module.exports = function(game) {
   }
 
   function bulletRicochet(bullet) {
+    Sound.ricochet();
     bullet.kill();
     var blood = game.add.emitter(bullet.x, bullet.y, 20);
     blood.makeParticles('blood');
@@ -67,15 +131,35 @@ module.exports = function(game) {
     player.addHealth();
   }
 
-  function clickResetButton() {
-    resetButton.destroy();
-    resetText.destroy();
+  function restart() {
+    game.state.restart();
+  }
 
-    player.restoreHealthAndSize();
-    player.revive();
+  function showDeathScreen() {
+    var centerX = game.camera.view.centerX,
+        centerY = game.camera.view.centerY,
+        current = { time: game.time.now - run.startedAt, kills: run.kills, wave: run.wave },
+        best = loadBest(),
+        bestLine;
 
-    weapon.resetAmmo();
-    resetButton = undefined;
+    if (!best || current.time > best.time) {
+      bestLine = best ? 'new best' : '';
+      saveBest(current);
+    } else {
+      bestLine = 'best ' + formatTime(best.time) + ' \u00b7 ' + best.kills + ' kills';
+    }
+
+    var title = game.add.text(centerX, centerY-230, 'ZOMBIES GOT HUNGRY!', { fontSize: '50px', fill: '#Ff3333' });
+    title.anchor.setTo(0.5, 0);
+
+    var button = game.add.button(centerX, centerY-130, 'button', restart, null, 2, 1, 0);
+    button.anchor.setTo(0.5, 0);
+
+    var summary = formatTime(current.time) + ' \u00b7 ' + current.kills + ' kills \u00b7 wave ' + current.wave;
+    game.add.text(centerX, centerY-30, summary, { font: '24px Arial', fill: '#c9c9c9' }).anchor.setTo(0.5, 0);
+    game.add.text(centerX, centerY+5, bestLine, { font: '18px Arial', fill: '#888888' }).anchor.setTo(0.5, 0);
+
+    game.input.keyboard.addKey(Phaser.Keyboard.ENTER).onDown.addOnce(restart);
   }
 
   gameState.create = function () {
@@ -119,6 +203,12 @@ module.exports = function(game) {
     });
 
     player = new Player(game);
+    run = { startedAt: game.time.now, kills: 0, wave: 0, nextWave: 0, nextGroan: 0, over: false };
+
+    // Buildings already in range of the spawn point stay empty so the opening is safe.
+    buildings.forEach(function(building) {
+      building.hasSpawned = buildingLogic.inSpawnRange(player, building);
+    });
 
     // Create throttled damage handler.
     collisionDamageFn = _.throttle(player.takeDamage.bind(player), 200, { 'leading': true, 'trailing': false });
@@ -128,19 +218,12 @@ module.exports = function(game) {
     game.physics.enable(bullets, Phaser.Physics.ARCADE);
 
     //Create zombie swarm
-    this.maxZombies = 30;
-
-    for(var k = 0; k < this.maxZombies; k++) {
-      zombieLogic.spawnZombie(game, player, zombies, game.world.randomX, game.world.randomY, {roamer: true});
-    }
+    spawnWave();
 
     //Add lighting objects
     lighting = new Lighting(game);
 
-    //Lock n load
-    weapon.init(game, player);
-
-    counts = Utilities.createCounts(game);
+    counts = properties.showStats ? Utilities.createCounts(game) : null;
   };
 
   gameState.update = function() {
@@ -159,15 +242,18 @@ module.exports = function(game) {
     game.physics.arcade.overlap(bullets, buildings, bulletRicochet, null, this);
     game.physics.arcade.overlap(player, healthPacks, resetPlayerHealth, null, this);
 
-    player.update();
-
-    if ( player.body.health > 1 && (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) ||
+    if (!run.over && (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) ||
         game.input.mousePointer.justPressed())) {
-        // player can only shoot if he isn't DED
-        weapon.shoot(game, player, bullets);
+      player.shoot(bullets);
     }
 
-    weapon.checkReload(game);
+    if (!run.over && game.time.now >= run.nextWave) {
+      spawnWave();
+    }
+
+    if (!run.over && game.time.now >= run.nextGroan) {
+      groan();
+    }
 
     _.each(buildings.children, function(building) {
       buildingLogic.spawnZombiesFromBuilding(game, zombies, player, building);
@@ -179,17 +265,15 @@ module.exports = function(game) {
 
     lighting.update(game, player, buildings);
 
-    Utilities.updateCounts(counts, zombies, buildings, staticObjects);
+    if (counts) {
+      Utilities.updateCounts(counts, zombies, buildings, staticObjects);
+    }
 
-    if(player.isDead() && !resetButton) {
-      var message = 'ZOMBIES GOT HUNGRY!';
-      var centerX = game.camera.view.centerX,
-          centerY = game.camera.view.centerY;
-      resetButton = game.add.button(centerX, centerY-130, 'button', clickResetButton, null, 2, 1, 0);
-      resetButton.anchor.setTo(0.5, 0);
+    if (player.isDead() && !run.over) {
+      run.over = true;
       player.kill();
-      resetText = game.add.text(centerX, centerY-230, message, { fontSize: '50px', fill: '#Ff3333' });
-      resetText.anchor.setTo(0.5, 0);
+      Sound.death();
+      showDeathScreen();
     }
 
   };

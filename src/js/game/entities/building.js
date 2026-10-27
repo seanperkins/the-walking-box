@@ -19,6 +19,8 @@ module.exports = function() {
     return distance < SPAWNING_DISTANCE + BUILDING_SIZE/2;
   }
 
+  logic.inSpawnRange = checkSpawn;
+
   logic.spawnZombiesFromBuilding = function (game, zombies, player, building) {
     if ( !building.hasSpawned && checkSpawn(player, building) ) {
       var playerX = player.position.x,
